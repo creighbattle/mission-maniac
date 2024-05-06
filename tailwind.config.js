@@ -12,7 +12,16 @@ module.exports = {
         "gradient-conic":
           "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
       },
+      keyframes: {
+        fadeIn: {
+          "0%": { opacity: "0" },
+          "100%": { opacity: "1" },
+        },
+      },
+      animation: {
+        "fade-in": "fadeIn 2s ease-out 0s forwards", // Define the animation with duration, timing function, delay, and fill mode
+      },
     },
   },
-  plugins: [],
+  plugins: [require("@tailwindcss/line-clamp")],
 };
