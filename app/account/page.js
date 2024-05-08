@@ -8,6 +8,7 @@ import ManiacNewbie from "./maniac/ManiacNewbie";
 import { useGetUserAccount } from "../hooks/useGetUser";
 import ClipLoader from "react-spinners/ClipLoader";
 import Requests from "./requests/Requests";
+import Recruits from "./recruits/Recruits";
 
 export default function Account() {
   useGetUserAccount();
@@ -49,9 +50,21 @@ export default function Account() {
       <div className="flex flex-col max-w-7xl mx-auto">
         <div className="text-white px-4 mt-4 flex flex-col justify-center tracking-wider">
           <AccountTabs setTab={setTab} />
-          {tab === 0 && <AccountStats />}
+          <div className={tab === 0 ? "" : "hidden"}>
+            <AccountStats />
+          </div>
+          <div className={tab === 1 ? "" : "hidden"}>
+            <ManiacNewbie />
+          </div>
+          <div className={tab === 2 ? "" : "hidden"}>
+            <Requests />
+          </div>
+          <div className={tab === 3 ? "" : "hidden"}>
+            <Recruits />
+          </div>
+          {/* {tab === 0 && <AccountStats />}
           {tab === 1 && <ManiacNewbie />}
-          {tab === 2 && <Requests />}
+          {tab === 2 && <Requests />} */}
         </div>
       </div>
     </>

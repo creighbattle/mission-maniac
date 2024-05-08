@@ -7,14 +7,34 @@ import {
   useElements,
   CardElement,
 } from "@stripe/react-stripe-js";
+import { fetchAuthSession } from "aws-amplify/auth";
+import useUserStore from "../stores/userStore";
 
-export default function PaymentForm({ setView }) {
+export default function PaymentForm({
+  setView,
+  funds,
+  expire,
+  mission,
+  message,
+}) {
+  const { user } = useUserStore();
   const stripe = useStripe();
   const elements = useElements();
   const [errorMessage, setErrorMessage] = useState("");
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    setErrorMessage("");
+
+    let jwt;
+
+    try {
+      const authSession = await fetchAuthSession();
+      jwt = authSession.tokens.accessToken.toString();
+    } catch (error) {
+      console.log(error);
+      return new Error("Error fetching auth session");
+    }
 
     if (!elements || !stripe) {
       return;
@@ -49,8 +69,6 @@ export default function PaymentForm({ setView }) {
       return;
     }
 
-    console.log(paymentMethod);
-
     // Fetch to create and confirm the PaymentIntent from your server
     const res = await fetch(
       "http://10.0.0.222:3005/api/create-confirm-payment-intent",
@@ -58,10 +76,16 @@ export default function PaymentForm({ setView }) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${jwt}`,
         },
         body: JSON.stringify({
-          amount: 1099,
+          amount: 1199,
           paymentMethodId: paymentMethod.id,
+          funds,
+          mission,
+          expire,
+          message,
+          maniac: user.username,
         }),
       }
     );
@@ -178,6 +202,9 @@ export default function PaymentForm({ setView }) {
               Recruit @pekinwoof for a mission.
             </p>
             <PaymentElement className="mt-4" />
+            {errorMessage && (
+              <p className="text-[#FB87A1] mt-4">{errorMessage}</p>
+            )}
           </div>
         </div>
         <div className="mt-5 sm:mt-6">

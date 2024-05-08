@@ -4,17 +4,30 @@ import { useEffect, useState } from "react";
 import { ClipLoader } from "react-spinners";
 import Typewriter from "typewriter-effect";
 import { PhotoIcon, UserCircleIcon } from "@heroicons/react/24/solid";
+import useNotificationStore from "@/app/stores/notificationStore";
+import Notification from "@/app/global-components/Notification";
 
 export default function ManiacNewbie() {
   const [el, setEl] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
   const { user, setUser } = useUserStore();
+  const [minFund, setMinFund] = useState("");
+
+  const { setShowNotification, setNMessage, setNTitle, setNError } =
+    useNotificationStore();
+
+  useEffect(() => {
+    if (!minFund) {
+      setMinFund(user.min_fund);
+    }
+  }, [user]);
 
   const handleClick = async () => {
     setLoading(true);
     const data = {
-      userId: user.userid,
-      stripeId: user.stripeid,
+      userId: user.user_id,
+      stripeId: user.stripe_id,
       infoRequired: user.info_required,
     };
 
@@ -34,9 +47,9 @@ export default function ManiacNewbie() {
 
       const { link, account, loginLink } = await response.json();
 
-      if (!user.stripeid && account) {
+      if (!user.stripe_id && account) {
         const clone = { ...user };
-        clone.stripeid = account.id;
+        clone.stripe_id = account.id;
         setUser(clone);
       }
 
@@ -46,6 +59,50 @@ export default function ManiacNewbie() {
       setLoading(false);
     } catch (error) {
       console.log(error);
+    }
+  };
+
+  const handleSave = async () => {
+    setNError(false);
+    setSaving(true);
+    const el = document.getElementById("accepting-missions");
+    const acceptingMissions = el.checked;
+
+    try {
+      const response = await fetch(
+        "http://10.0.0.222:3005/api/save-maniac-info",
+        {
+          method: "POST",
+          mode: "cors",
+          cache: "no-cache",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            acceptingMissions,
+            minFund,
+            userId: user.user_id,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const { message } = await response.json();
+        throw new Error(message);
+      }
+
+      setNTitle("Successfully saved!");
+      setNMessage("Your mission request requirements have been updated.");
+      setSaving(false);
+      //console.log(message);
+    } catch (error) {
+      setSaving(false);
+      console.log("here");
+      setNError(true);
+      setNTitle("Uh oh!");
+      setNMessage(error.message);
+    } finally {
+      setShowNotification(true);
     }
   };
 
@@ -69,9 +126,10 @@ export default function ManiacNewbie() {
     );
   }
 
-  if (user.stripeid && !user.info_required) {
+  if (user.stripe_id && !user.info_required) {
     return (
       <div className="flex flex-col">
+        <Notification />
         <div className="mt-5 flex items-center justify-center">
           <button
             type="button"
@@ -100,6 +158,7 @@ export default function ManiacNewbie() {
         <div className="flex items-center justify-between mt-4 border-white border-b">
           <h2 className="text-white ">Accepting Missions?</h2>
           <input
+            defaultChecked={user.accepting_missions}
             id="accepting-missions"
             aria-describedby="accepting-missions"
             name="accepting-missions"
@@ -115,7 +174,9 @@ export default function ManiacNewbie() {
               $
             </span>
             <input
-              type="tel"
+              onChange={(e) => setMinFund(e.target.value)}
+              value={minFund}
+              type="text"
               inputMode="decimal"
               name="username"
               id="username"
@@ -125,20 +186,33 @@ export default function ManiacNewbie() {
           </div>
         </div>
 
-        <div className="fixed bottom-5 right-3">
+        <div className="fixed bottom-5 right-3 flex items-center">
           <button
             type="button"
-            onClick={handleClick}
+            onClick={handleSave}
             className="justify-center ml-2 text-black rounded-md bg-green-400 px-6 py-2 text-sm font-semibold leading-6  shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600"
           >
-            Save
+            {!saving ? (
+              "Save"
+            ) : (
+              <div className="flex items-center justify-center">
+                <ClipLoader
+                  color={"black"}
+                  loading={saving}
+                  // cssOverride={override}
+                  size={25}
+                  aria-label="Loading Spinner"
+                  data-testid="loader"
+                />
+              </div>
+            )}
           </button>
         </div>
       </div>
     );
   }
 
-  if (user.stripeid && user.info_required) {
+  if (user.stripe_id && user.info_required) {
     return (
       <div>
         <div className="mt-5 flex flex-col items-center justify-center">

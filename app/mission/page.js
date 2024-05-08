@@ -22,7 +22,7 @@ Amplify.configure({
 export default function Mission() {
   const [tab, setTab] = useState(0);
   // const { setUsername, setEmail, username } = useUserStore();
-  useGetUser();
+  //useGetUser();
 
   // useEffect(() => {
   //   getUser();

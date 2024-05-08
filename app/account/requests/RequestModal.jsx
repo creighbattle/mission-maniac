@@ -2,9 +2,15 @@
 import { Fragment, useState } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import RequestInfo from "./RequestInfo";
+import AcceptMission from "./AcceptMission";
+import DeclineMission from "./DeclineMission";
 
-export default function RequestModal({ open, setOpen }) {
-  const [view, setView] = useState(0);
+export default function RequestModal({ open, setOpen, view, setView }) {
+  const [fundingGoal, setFundingGoal] = useState();
+  const [matureContent, setMatureContent] = useState(false);
+  const [declineMessage, setDeclineMessage] = useState("");
+  const [inappropriate, setInappropriate] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   return (
     <Transition.Root show={open} as={Fragment}>
@@ -34,9 +40,28 @@ export default function RequestModal({ open, setOpen }) {
             >
               <Dialog.Panel className="relative transform overflow-hidden rounded-t-lg sm:rounded-lg bg-[#141414] px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 w-full sm:w-full sm:max-w-sm sm:p-6">
                 <div className={view === 0 ? "" : "hidden"}>
-                  <RequestInfo setView={setView} />
+                  <RequestInfo setView={setView} setOpen={setOpen} />
                 </div>
-                <div className={view === 1 ? "" : "hidden"}></div>
+                <div className={view === 1 ? "" : "hidden"}>
+                  <DeclineMission
+                    setView={setView}
+                    setOpen={setOpen}
+                    declineReason={declineMessage}
+                    setDeclineReason={setDeclineMessage}
+                    inappropriate={inappropriate}
+                    setInappropriate={setInappropriate}
+                  />
+                </div>
+                <div className={view === 2 ? "" : "hidden"}>
+                  <AcceptMission
+                    setView={setView}
+                    setOpen={setOpen}
+                    fundingGoal={fundingGoal}
+                    setFundingGoal={setFundingGoal}
+                    matureContent={matureContent}
+                    setMatureContent={setMatureContent}
+                  />
+                </div>
               </Dialog.Panel>
             </Transition.Child>
           </div>

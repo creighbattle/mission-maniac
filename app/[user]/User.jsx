@@ -51,9 +51,13 @@
 import { useState } from "react";
 import Stats from "./Stats";
 import MissionFeed from "./MissionFeed";
+import MoreInfo from "../global-components/MoreInfo";
+import useInfoStore from "../stores/infoStore";
+import useUserStore from "../stores/userStore";
 
 export default function User() {
   const [expanded, setExpanded] = useState(false);
+  const { user } = useUserStore();
 
   return (
     <div className="h-svh flex flex-col">
@@ -62,12 +66,15 @@ export default function User() {
           expanded ? "rounded-b-xl" : "rounded-none"
         }`}
       >
-        <img
-          className="inline-block h-14 w-14 rounded-full"
-          src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-          alt=""
-        />
-        <p className="ml-2">@pekinwoof</p>
+        {user?.photoUrl && (
+          <img
+            className="inline-block h-14 w-14 rounded-full"
+            src={user.photoUrl}
+            alt=""
+          />
+        )}
+
+        <p className="ml-2">@{user?.username}</p>
       </div>
       <div
         className="bg-gray-800 flex flex-col flex-grow px-[5.5vw] transition-max-height duration-500 ease-in-out"

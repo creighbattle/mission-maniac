@@ -2,6 +2,10 @@ import { create } from "zustand";
 
 const useUserStore = create((set, get) => ({
   user: null,
+  selectedData: null,
+  mission: null,
+  data: [],
+  cursor: null,
   signUpOutput: null,
   email: "",
   username: "",
@@ -9,6 +13,12 @@ const useUserStore = create((set, get) => ({
   error: null,
   setUser: (user) => {
     set({ user });
+  },
+  setMissions: (missions) => {
+    set({ missions });
+  },
+  setSelectedData: (selectedData) => {
+    set({ selectedData });
   },
   setSignUpOutput: (signUpOutput) => {
     set({ signUpOutput });
@@ -21,6 +31,12 @@ const useUserStore = create((set, get) => ({
   },
   setLoading: (loading) => {
     set({ loading });
+  },
+  setData: (data) => {
+    set({ data });
+  },
+  setCursor: (cursor) => {
+    set({ cursor });
   },
 }));
 

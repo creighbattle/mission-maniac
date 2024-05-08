@@ -17,7 +17,9 @@ export default function AccountTabs({ setTab }) {
   const [tabs, setTabs] = useState([
     { name: "Stats", current: true, onClick: () => console.log("hi") },
     { name: "Maniac", current: false, onClick: () => console.log("hi") },
-    { name: "Requests", current: false, onClick: () => console.log("hi") },
+    { name: "Missions", current: false, onClick: () => console.log("hi") },
+    { name: "Recruits", current: false, onClick: () => console.log("hi") },
+    { name: "Supports", current: false, onClick: () => console.log("hi") },
     { name: "Badges", current: false, onClick: () => console.log("hi") },
     { name: "Bookmarks", current: false, onClick: () => console.log("hi") },
 

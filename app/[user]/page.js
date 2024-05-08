@@ -3,6 +3,16 @@ import { Elements } from "@stripe/react-stripe-js";
 import Header from "../global-components/Header";
 import User from "./User";
 import { loadStripe } from "@stripe/stripe-js";
+import {
+  useRouter,
+  useParams,
+  useSearchParams,
+  usePathname,
+} from "next/navigation";
+import { useEffect } from "react";
+import { useGetUser } from "../hooks/useGetUser";
+import useUserStore from "../stores/userStore";
+import { ClipLoader } from "react-spinners";
 
 // export default function UserPage() {
 //   return (
@@ -18,6 +28,9 @@ const stripePromise = loadStripe(
 );
 
 export default function UserPage() {
+  useGetUser();
+  const { user, loading } = useUserStore();
+
   const options = {
     mode: "payment",
     amount: 1099,
@@ -28,6 +41,21 @@ export default function UserPage() {
     },
     paymentMethodCreation: "manual",
   };
+
+  if (!user) {
+    return (
+      <div className="h-svh w-svw flex flex-col items-center justify-center">
+        <ClipLoader
+          color={"#4ade80"}
+          loading={loading}
+          // cssOverride={override}
+          size={150}
+          aria-label="Loading Spinner"
+          data-testid="loader"
+        />
+      </div>
+    );
+  }
 
   return (
     <Elements stripe={stripePromise} options={options}>

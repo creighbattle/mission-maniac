@@ -5,7 +5,7 @@ import {
   fetchUserAttributes,
   getCurrentUser,
 } from "aws-amplify/auth";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter, usePathname, useParams } from "next/navigation";
 import { Amplify } from "aws-amplify";
 
 Amplify.configure({
@@ -18,31 +18,41 @@ Amplify.configure({
 });
 
 export function useGetUser() {
-  const { setUsername, setEmail, username } = useUserStore();
+  const { setUsername, setEmail, username, setUser } = useUserStore();
   const router = useRouter();
+  const params = useParams();
 
   useEffect(() => {
-    getUser();
+    getUser(params.user);
   }, []);
 
-  const getUser = async () => {
-    fetchUserAttributes()
-      .then((userAttributes) => {
-        if (!userAttributes.preferred_username) {
-          router.push("new-account");
-          return;
-        }
-        if (!username) {
-          setEmail(userAttributes.email);
-          setUsername(userAttributes.preferred_username);
-        }
-        console.log("user attributes");
-        console.log(userAttributes);
-      })
-      .catch((err) => {
-        console.log("user attributes erros");
-        console.log(err);
+  const getUser = async (username) => {
+    console.log(username);
+
+    // Directly make a request without checking session storage
+    try {
+      const url = new URL("http://10.0.0.222:3005/api/get-user");
+      url.searchParams.append("username", username);
+
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
       });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("success", data);
+        setUser(data.user);
+        return data;
+      } else {
+        throw new Error("Failed to fetch user profile");
+      }
+    } catch (error) {
+      console.log("Error fetching user profile:", error);
+      router.push("/");
+    }
   };
 
   return;
@@ -98,7 +108,6 @@ const getUser = async () => {
 
   try {
     const response = await fetch("http://10.0.0.222:3005/api/test", {
-      cache: "no-cache",
       headers: {
         Authorization: `Bearer ${jwt}`,
       },
