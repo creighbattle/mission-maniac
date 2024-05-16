@@ -10,6 +10,10 @@ import {
   XMarkIcon,
 } from "@heroicons/react/20/solid";
 import { Listbox, Transition } from "@headlessui/react";
+import { ClipLoader } from "react-spinners";
+import useNotificationStore from "@/app/stores/notificationStore";
+import { fetchAuthSession } from "aws-amplify/auth";
+import useUserStore from "@/app/stores/userStore";
 
 const moods = [
   {
@@ -63,11 +67,64 @@ function classNames(...classes) {
 export default function CommentTextbox() {
   const [selected, setSelected] = useState(moods[5]);
   const [text, setText] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { mission } = useUserStore();
+  const { setShowNotification, setNTitle, setNMessage, setNError } =
+    useNotificationStore();
+
+  const handleSubmit = async (e) => {
+    if (loading) return;
+
+    e.preventDefault();
+    setLoading(true);
+
+    let jwt;
+
+    try {
+      const authSession = await fetchAuthSession();
+      jwt = authSession.tokens.accessToken.toString();
+    } catch (error) {
+      console.log(error);
+      return new Error("Error fetching auth session");
+    }
+
+    const res = await fetch(
+      "http://10.0.0.222:3005/api/create-mission-comment",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${jwt}`,
+        },
+        body: JSON.stringify({
+          missionId: mission.mission_id,
+          missionComment: text,
+        }),
+      }
+    );
+
+    const result = await res.json();
+
+    if (!res.ok) {
+      setShowNotification(true);
+      setNError(true);
+      setNTitle("Uh oh!");
+      setNMessage(result.message);
+    } else {
+      setShowNotification(true);
+      setNError(false);
+      setNTitle("Comment Uploaded");
+      setNMessage("Your comment has been successfully uploaded");
+      setText("");
+    }
+
+    setLoading(false);
+  };
 
   return (
-    <div className="flex items-start space-x-4 mt-4">
+    <div className="flex items-start space-x-4 mt-4 outline-none">
       <div className="min-w-0 flex-1">
-        <form action="#" className="relative">
+        <form action="#" className="relative" onSubmit={handleSubmit}>
           <div className="overflow-hidden rounded-lg shadow-sm ring-1 ring-inset ring-gray-300 focus-within:ring-2 focus-within:ring-green-400">
             <label htmlFor="comment" className="sr-only">
               Add your comment
@@ -76,9 +133,9 @@ export default function CommentTextbox() {
               rows={text ? 5 : 1}
               name="comment"
               id="comment"
-              className="block w-full resize-none border-0 bg-transparent py-1.5 text-white placeholder:text-gray-400 focus:ring-0 sm:text-sm sm:leading-6 px-3 caret-green-400"
+              className="block w-full resize-none border-0 bg-transparent py-1.5 text-white placeholder:text-gray-400 focus:ring-0 sm:text-sm sm:leading-6 px-3 caret-green-400 outline-none"
               placeholder="Add your comment..."
-              defaultValue={text}
+              value={text}
               onChange={(e) => setText(e.target.value)}
             />
 
@@ -194,7 +251,18 @@ export default function CommentTextbox() {
                   type="submit"
                   className="inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold shadow-sm hover:bg-green-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-400"
                 >
-                  Post
+                  {!loading ? (
+                    "Post"
+                  ) : (
+                    <ClipLoader
+                      color={"black"}
+                      loading={loading}
+                      // cssOverride={override}
+                      size={25}
+                      aria-label="Loading Spinner"
+                      data-testid="loader"
+                    />
+                  )}
                 </button>
               </div>
             </div>

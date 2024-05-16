@@ -1,20 +1,32 @@
 "use client";
-import { Fragment, useState } from "react";
+import { Fragment } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import RequestInfo from "./RequestInfo";
 import AcceptMission from "./AcceptMission";
 import DeclineMission from "./DeclineMission";
+import ActiveMissionInfo from "./ActiveMissionInfo";
+import AbortMission from "./AbortMission";
+import CompleteMission from "./CompleteMission";
+import UpdateMission from "./UpdateMission";
+import MissionSummary from "./MissionSummary";
+import MissionExpired from "./MissionExpired";
 
-export default function RequestModal({ open, setOpen, view, setView }) {
-  const [fundingGoal, setFundingGoal] = useState();
-  const [matureContent, setMatureContent] = useState(false);
-  const [declineMessage, setDeclineMessage] = useState("");
-  const [inappropriate, setInappropriate] = useState(false);
-  const [loading, setLoading] = useState(false);
-
+export default function RequestModal({
+  open,
+  setOpen,
+  view,
+  setView,
+  missions,
+  setMissions,
+}) {
   return (
     <Transition.Root show={open} as={Fragment}>
-      <Dialog className="relative z-50" onClose={setOpen}>
+      <Dialog
+        className="relative z-50"
+        onClose={() => {
+          setOpen(false);
+        }}
+      >
         <Transition.Child
           as={Fragment}
           enter="ease-out duration-300"
@@ -46,21 +58,45 @@ export default function RequestModal({ open, setOpen, view, setView }) {
                   <DeclineMission
                     setView={setView}
                     setOpen={setOpen}
-                    declineReason={declineMessage}
-                    setDeclineReason={setDeclineMessage}
-                    inappropriate={inappropriate}
-                    setInappropriate={setInappropriate}
+                    missions={missions}
+                    setMissions={setMissions}
                   />
                 </div>
                 <div className={view === 2 ? "" : "hidden"}>
                   <AcceptMission
                     setView={setView}
                     setOpen={setOpen}
-                    fundingGoal={fundingGoal}
-                    setFundingGoal={setFundingGoal}
-                    matureContent={matureContent}
-                    setMatureContent={setMatureContent}
+                    missions={missions}
+                    setMissions={setMissions}
                   />
+                </div>
+                <div className={view === 3 ? "" : "hidden"}>
+                  <ActiveMissionInfo setView={setView} setOpen={setOpen} />
+                </div>
+                <div className={view === 4 ? "" : "hidden"}>
+                  <AbortMission
+                    setView={setView}
+                    setOpen={setOpen}
+                    missions={missions}
+                    setMissions={setMissions}
+                  />
+                </div>
+                <div className={view === 5 ? "" : "hidden"}>
+                  <CompleteMission
+                    setView={setView}
+                    setOpen={setOpen}
+                    missions={missions}
+                    setMissions={setMissions}
+                  />
+                </div>
+                <div className={view === 6 ? "" : "hidden"}>
+                  <MissionSummary setView={setView} setOpen={setOpen} />
+                </div>
+                <div className={view === 7 ? "" : "hidden"}>
+                  <UpdateMission setView={setView} setOpen={setOpen} />
+                </div>
+                <div className={view === 8 ? "" : "hidden"}>
+                  <MissionExpired setView={setView} setOpen={setOpen} />
                 </div>
               </Dialog.Panel>
             </Transition.Child>

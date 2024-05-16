@@ -7,7 +7,7 @@ import useUserStore from "../stores/userStore";
 
 export default function CreateMissionModal({ open, setOpen }) {
   const [view, setView] = useState(0);
-  const { showInfo, setShowInfo } = useUserStore();
+  const { showInfo, setShowInfo, amount } = useUserStore();
 
   const [funds, setFunds] = useState(0);
   const [expire, setExpire] = useState("Never");
@@ -76,6 +76,7 @@ export default function CreateMissionModal({ open, setOpen }) {
                     setMessage={setMessage}
                   />
                 </div>
+
                 <div className={view === 1 ? "" : "hidden"}>
                   <PaymentForm
                     setView={setView}
@@ -83,6 +84,7 @@ export default function CreateMissionModal({ open, setOpen }) {
                     expire={expire}
                     mission={mission}
                     message={message}
+                    setOpen={setOpen}
                   />
                 </div>
               </Dialog.Panel>

@@ -27,12 +27,18 @@ export function useGetUser() {
   }, []);
 
   const getUser = async (username) => {
-    console.log(username);
+    let currentUsername;
+
+    try {
+      const userAttributes = await fetchUserAttributes();
+      currentUsername = userAttributes.preferred_username;
+    } catch (error) {}
 
     // Directly make a request without checking session storage
     try {
       const url = new URL("http://10.0.0.222:3005/api/get-user");
       url.searchParams.append("username", username);
+      url.searchParams.append("currentUsername", currentUsername);
 
       const response = await fetch(url, {
         method: "GET",

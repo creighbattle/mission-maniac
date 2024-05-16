@@ -51,18 +51,23 @@
 import { useState } from "react";
 import Stats from "./Stats";
 import MissionFeed from "./MissionFeed";
-import MoreInfo from "../global-components/MoreInfo";
-import useInfoStore from "../stores/infoStore";
 import useUserStore from "../stores/userStore";
+import useNotificationStore from "../stores/notificationStore";
+import toggleUserSpectate from "../api-calls/toggle-user-spectate";
+import { ClipLoader } from "react-spinners";
+import Username from "../global-components/Username";
 
 export default function User() {
   const [expanded, setExpanded] = useState(false);
-  const { user } = useUserStore();
+  const { user, setUser } = useUserStore();
+  const [loading, setLoading] = useState(false);
+  const { setShowNotification, setNTitle, setNMessage, setNError } =
+    useNotificationStore();
 
   return (
     <div className="h-svh flex flex-col">
       <div
-        className={`flex justify-center items-center pb-2 bg-white pt-24 ${
+        className={`flex flex-col justify-center items-center pb-2 bg-white pt-24 ${
           expanded ? "rounded-b-xl" : "rounded-none"
         }`}
       >
@@ -74,18 +79,64 @@ export default function User() {
           />
         )}
 
-        <p className="ml-2">@{user?.username}</p>
+        <Username
+          username={user.username}
+          textColor={"black"}
+          outlineColor={"black"}
+          completedMissions={user.completed_missions}
+          recruits={user.recruits}
+          supports={user.supported_missions}
+        />
+        <div className="flex items-center justify-center">
+          <img className="h-5 w-5 rounded-full" src="/binoculars.png" alt="" />
+          <p className="ml-2">{user.spectators}</p>
+        </div>
       </div>
+
       <div
         className="bg-gray-800 flex flex-col flex-grow px-[5.5vw] transition-max-height duration-500 ease-in-out"
         style={{ maxHeight: expanded ? "1000px" : "0px" }} // Adjust max-height according to your content size
       >
         {expanded && (
           <>
-            <p className="text-center mt-4 text-white">
-              Hi guys, feel free to challenge me to some missions. I mostly do
-              challenges regarding League of Legends challenges.
-            </p>
+            <div className="flex items-center w-full justify-center mt-5">
+              <button
+                onClick={async () => {
+                  if (!loading) {
+                    await toggleUserSpectate({
+                      profileUsername: user.username,
+                      setLoading,
+                      setNError,
+                      setShowNotification,
+                      setNTitle,
+                      setNMessage,
+                      spectating: !user.is_spectating,
+                      setUser,
+                      user,
+                    });
+                  }
+                }}
+                className="w-fit rounded-md bg-white text-black px-3 py-1  font-semibold shadow-sm  focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+              >
+                {!loading ? (
+                  user.is_spectating ? (
+                    "Unspectate"
+                  ) : (
+                    "Spectate"
+                  )
+                ) : (
+                  <ClipLoader
+                    color={"white"}
+                    loading={loading}
+                    // cssOverride={override}
+                    size={25}
+                    aria-label="Loading Spinner"
+                    data-testid="loader"
+                  />
+                )}
+              </button>
+            </div>
+            <p className="text-center mt-4 text-white">{user?.bio}</p>
             <div className="max-w-7xl  mx-auto w-full px-4">
               <Stats />
             </div>

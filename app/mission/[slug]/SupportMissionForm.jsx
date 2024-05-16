@@ -1,19 +1,17 @@
 "use client";
 import { Dialog } from "@headlessui/react";
 import { InformationCircleIcon } from "@heroicons/react/24/outline";
-import useInfoStore from "../stores/infoStore";
-import MoreInfo from "../global-components/MoreInfo";
-import Dropdown from "../global-components/Dropdown";
-import useUserStore from "../stores/userStore";
-import { useState } from "react";
+import useInfoStore from "@/app/stores/infoStore";
+import useUserStore from "@/app/stores/userStore";
+import MoreInfo from "@/app/global-components/MoreInfo";
 
-export default function CreateMissionForm({
+export default function SupportMissionForm({
   setView,
   setFunds,
-  setExpire,
-  expire,
-  setMission,
-  setMessage,
+  setComment,
+  setIsCommentPublic,
+  isCommentPublic,
+  funds,
 }) {
   const {
     infoMessage,
@@ -23,17 +21,7 @@ export default function CreateMissionForm({
     setTitle,
     setInfoMessage,
   } = useInfoStore();
-  const { user, setAmount, amount } = useUserStore();
-
-  const options = [
-    "Never",
-    "14 Days",
-    "30 Days",
-    "60 Days",
-    "100 Days",
-    "200 Days",
-    "365 Days",
-  ];
+  const { user } = useUserStore();
 
   const handleInfo = (t) => {
     switch (t) {
@@ -69,7 +57,7 @@ export default function CreateMissionForm({
             as="h3"
             className="text-base font-semibold leading-6 text-white"
           >
-            Create Mission
+            Support Mission
           </Dialog.Title>
         </div>
       </div>
@@ -77,10 +65,8 @@ export default function CreateMissionForm({
       <form>
         <div className="space-y-0">
           <div className="">
-            <p className="mt-4 text-sm leading-6 text-gray-100">
-              Recruit <span className="text-green-400">@{user.username}</span>{" "}
-              for a mission. Minimum funding needed to create a mission is $
-              {user.min_fund}.
+            <p className="mt-4 text-sm leading-6 text-gray-100 text-center">
+              Support @{user.username}&apos;s mission.
             </p>
 
             <div className="mt-4">
@@ -104,15 +90,15 @@ export default function CreateMissionForm({
                     $
                   </span>
                   <input
-                    // onChange={(e) => setAmount(e.target.value)}
                     onChange={(e) => {
                       const value = e.target.value;
                       if (/^\d*$/.test(value)) {
-                        setAmount(value);
+                        // This regex allows only digits
+                        setFunds(value);
                         console.log("yup");
                       }
                     }}
-                    value={amount}
+                    value={funds}
                     type="tel"
                     inputMode="decimal"
                     name="fund"
@@ -124,12 +110,12 @@ export default function CreateMissionForm({
               </div>
 
               <div className="mt-4">
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center justify-between">
                   <label
-                    htmlFor="message"
+                    htmlFor="comment"
                     className="block text-sm font-medium leading-6 text-green-400"
                   >
-                    Expire
+                    Comment
                   </label>
                   <InformationCircleIcon
                     className="h-5 w-5 text-green-400"
@@ -137,67 +123,31 @@ export default function CreateMissionForm({
                     onClick={() => handleInfo("message")}
                   />
                 </div>
-                <Dropdown
-                  option={expire}
-                  setOption={setExpire}
-                  options={options}
-                  createMission={true}
-                  right={true}
+                <div className="mt-2">
+                  <textarea
+                    onChange={(e) => setComment(e.target.value)}
+                    id="comment"
+                    name="comment"
+                    autoComplete="off"
+                    rows={3}
+                    className="block w-full rounded-md border-0 py-1.5 px-2 bg-[#141414] text-white shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-green-400 sm:text-sm sm:leading-6 outline-none"
+                    defaultValue={""}
+                  />
+                </div>
+              </div>
+              <div className="col-span-full mt-5 flex items-center justify-between">
+                <label
+                  htmlFor="is-public-comment"
+                  className="block text-sm font-medium leading-6 text-green-400"
+                >
+                  Public Comment
+                </label>
+                <input
+                  onChange={(e) => setIsCommentPublic(!isCommentPublic)}
+                  name="is-public-comment"
+                  type="checkbox"
+                  className="h-4 w-4 rounded border-gray-300 focus:ring-green-600 accent-green-400"
                 />
-              </div>
-
-              <div className="mt-4">
-                <div className="flex items-center justify-between">
-                  <label
-                    htmlFor="mission"
-                    className="block text-sm font-medium leading-6 text-green-400"
-                  >
-                    Mission
-                  </label>
-                  <InformationCircleIcon
-                    className="h-5 w-5 text-green-400"
-                    aria-hidden="true"
-                    onClick={() => handleInfo("mission")}
-                  />
-                </div>
-                <div className="mt-2">
-                  <textarea
-                    onChange={(e) => setMission(e.target.value)}
-                    id="mission"
-                    name="mission"
-                    autoComplete="off"
-                    rows={3}
-                    className="block w-full rounded-md border-0 py-1.5 px-2 bg-[#141414] text-white shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-green-400 sm:text-sm sm:leading-6 outline-none"
-                    defaultValue={""}
-                  />
-                </div>
-              </div>
-
-              <div className="mt-4">
-                <div className="flex items-center justify-between">
-                  <label
-                    htmlFor="message"
-                    className="block text-sm font-medium leading-6 text-green-400"
-                  >
-                    Message
-                  </label>
-                  <InformationCircleIcon
-                    className="h-5 w-5 text-green-400"
-                    aria-hidden="true"
-                    onClick={() => handleInfo("message")}
-                  />
-                </div>
-                <div className="mt-2">
-                  <textarea
-                    onChange={(e) => setMessage(e.target.value)}
-                    id="message"
-                    name="message"
-                    autoComplete="off"
-                    rows={3}
-                    className="block w-full rounded-md border-0 py-1.5 px-2 bg-[#141414] text-white shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-green-400 sm:text-sm sm:leading-6 outline-none"
-                    defaultValue={""}
-                  />
-                </div>
               </div>
             </div>
           </div>

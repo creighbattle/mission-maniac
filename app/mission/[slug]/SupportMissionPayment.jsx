@@ -8,19 +8,18 @@ import {
   CardElement,
 } from "@stripe/react-stripe-js";
 import { fetchAuthSession } from "aws-amplify/auth";
-import useUserStore from "../stores/userStore";
+import useUserStore from "@/app/stores/userStore";
+import useNotificationStore from "@/app/stores/notificationStore";
 import { ClipLoader } from "react-spinners";
-import useNotificationStore from "../stores/notificationStore";
 
-export default function PaymentForm({
+export default function SupportMissionPayment({
   setView,
   funds,
-  expire,
-  mission,
-  message,
+  comment,
+  isCommentPublic,
   setOpen,
 }) {
-  const { user, amount } = useUserStore();
+  const { user, mission } = useUserStore();
   const stripe = useStripe();
   const elements = useElements();
   const [errorMessage, setErrorMessage] = useState("");
@@ -29,9 +28,12 @@ export default function PaymentForm({
     useNotificationStore();
 
   const handleSubmit = async (event) => {
+    event.preventDefault();
+
     setLoading(true);
 
-    event.preventDefault();
+    console.log(mission);
+
     setErrorMessage("");
 
     let jwt;
@@ -50,7 +52,6 @@ export default function PaymentForm({
 
     const { error: submitError } = await elements.submit();
     if (submitError) {
-      // Show error to your customer
       console.log("submit error");
       console.log(submitError);
       setErrorMessage(submitError.message);
@@ -61,11 +62,6 @@ export default function PaymentForm({
       capture_method: "manual",
     });
 
-    //const cardElement = elements.getElement(stripe.elements.CardElement);
-
-    //console.log(cardElement);
-
-    // Get a reference to a payment method
     const { error: paymentMethodError, paymentMethod } =
       await stripe.createPaymentMethod({
         elements,
@@ -78,25 +74,20 @@ export default function PaymentForm({
     }
 
     // Fetch to create and confirm the PaymentIntent from your server
-    const res = await fetch(
-      "http://10.0.0.222:3005/api/create-confirm-payment-intent",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${jwt}`,
-        },
-        body: JSON.stringify({
-          amount,
-          paymentMethodId: paymentMethod.id,
-          funds,
-          mission,
-          expire,
-          message,
-          maniac: user.username,
-        }),
-      }
-    );
+    const res = await fetch("http://10.0.0.222:3005/api/support-mission", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${jwt}`,
+      },
+      body: JSON.stringify({
+        fundAmount: funds,
+        paymentMethodId: paymentMethod.id,
+        comment,
+        isCommentPublic,
+        missionId: mission.mission_id,
+      }),
+    });
 
     const result = await res.json();
 
@@ -108,10 +99,8 @@ export default function PaymentForm({
 
       setOpen(false);
       setNError(false);
-      setNTitle("Mission Request Created");
-      setNMessage(
-        `Your mission was successfully created. You can keep an eye on the status of the request in your account page under Recruits.`
-      );
+      setNTitle("Supported");
+      setNMessage(`You successfully supported @${user.username}'s mission.`);
       setShowNotification(true);
     }
 
@@ -169,7 +158,7 @@ export default function PaymentForm({
             className="inline-flex w-full justify-center rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600"
           >
             {!loading ? (
-              "Create Mission"
+              "Support Mission"
             ) : (
               <ClipLoader
                 color={"black"}

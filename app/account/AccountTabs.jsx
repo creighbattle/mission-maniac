@@ -20,18 +20,19 @@ export default function AccountTabs({ setTab }) {
     { name: "Missions", current: false, onClick: () => console.log("hi") },
     { name: "Recruits", current: false, onClick: () => console.log("hi") },
     { name: "Supports", current: false, onClick: () => console.log("hi") },
-    { name: "Badges", current: false, onClick: () => console.log("hi") },
-    { name: "Bookmarks", current: false, onClick: () => console.log("hi") },
+    // { name: "Badges", current: false, onClick: () => console.log("hi") },
+    { name: "Spectating", current: false, onClick: () => console.log("hi") },
+    { name: "Settings", current: false, onClick: () => console.log("hi") },
 
-    {
-      name: "Sign Out",
-      current: false,
-      onClick: async () => {
-        await signOut()
-          .then(() => console.log("user signed out"))
-          .catch((err) => console.log(err));
-      },
-    },
+    // {
+    //   name: "Logout",
+    //   current: false,
+    //   onClick: async () => {
+    //     await signOut()
+    //       .then(() => console.log("user signed out"))
+    //       .catch((err) => console.log(err));
+    //   },
+    // },
   ]);
 
   const handleTabClick = (idx) => {

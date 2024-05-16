@@ -1,19 +1,77 @@
+import useNotificationStore from "@/app/stores/notificationStore";
+import useUserStore from "@/app/stores/userStore";
 import { Dialog } from "@headlessui/react";
+import { fetchAuthSession } from "aws-amplify/auth";
 import { useState } from "react";
 import { ClipLoader } from "react-spinners";
 
 export default function AcceptMission({
   setView,
   setOpen,
-  fundingGoal,
-  setFundingGoal,
-  matureContent,
-  setMatureContent,
+  missions,
+  setMissions,
 }) {
   const [loading, setLoading] = useState();
+  const [fundingGoal, setFundingGoal] = useState();
+  const [matureContent, setMatureContent] = useState(false);
+  const { setShowNotification, setNTitle, setNMessage, setNError } =
+    useNotificationStore();
+  const { selectedData } = useUserStore();
+  const [error, setError] = useState("");
 
   const handleAccept = async () => {
+    setError("");
     setLoading(true);
+    let jwt;
+    try {
+      const authSession = await fetchAuthSession();
+      jwt = authSession.tokens.accessToken.toString();
+    } catch (error) {
+      console.log(error);
+      return new Error("Error fetching auth session");
+    }
+
+    try {
+      const response = await fetch(
+        "http://10.0.0.222:3005/api/accept-mission",
+        {
+          method: "POST",
+          mode: "cors",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${jwt}`,
+          },
+          body: JSON.stringify({
+            missionId: selectedData.mission_id,
+            fundingGoal,
+            matureContent,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        console.log(response);
+        const { message } = await response.json();
+        throw new Error(message);
+      }
+
+      setOpen(false);
+
+      setTimeout(() => {
+        setLoading(false);
+      }, 500);
+      setShowNotification(true);
+      setNTitle("Mission Accepted");
+      setNMessage("The mission has been accepted. Good luck!");
+
+      setMissions(
+        missions.filter((val) => val.mission_id !== selectedData.mission_id)
+      );
+    } catch (error) {
+      setError(error.message);
+      setLoading(false);
+    } finally {
+    }
   };
 
   return (
@@ -91,7 +149,7 @@ export default function AcceptMission({
           </div>
         </div>
       </div>
-      <div className="col-span-full mt-5 flex items-center justify-between">
+      {/* <div className="col-span-full mt-5 flex items-center justify-between">
         <label
           htmlFor="mission"
           className="block text-sm font-medium leading-6 text-green-400"
@@ -105,12 +163,17 @@ export default function AcceptMission({
           type="checkbox"
           className="h-4 w-4 rounded border-gray-300 focus:ring-green-600 accent-green-400"
         />
-      </div>
+      </div> */}
       <div className="mt-5 sm:mt-6">
+        {error && (
+          <div>
+            <p className="text-[#FB87A1] mb-2 text-center">{error}</p>
+          </div>
+        )}
         <button
           type="button"
           className="inline-flex w-full justify-center rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600"
-          onClick={() => setView(1)}
+          onClick={handleAccept}
         >
           {!loading ? (
             "Accept"
@@ -124,7 +187,6 @@ export default function AcceptMission({
               data-testid="loader"
             />
           )}
-          {/* Accept */}
         </button>
       </div>
     </div>

@@ -5,17 +5,21 @@ const useUserStore = create((set, get) => ({
   selectedData: null,
   mission: null,
   data: [],
-  cursor: null,
+  currentCursor: 0,
   signUpOutput: null,
   email: "",
   username: "",
   loading: true,
+  amount: 0,
   error: null,
   setUser: (user) => {
     set({ user });
   },
-  setMissions: (missions) => {
-    set({ missions });
+  setAmount: (amount) => {
+    set({ amount });
+  },
+  setMission: (mission) => {
+    set({ mission });
   },
   setSelectedData: (selectedData) => {
     set({ selectedData });
@@ -35,8 +39,8 @@ const useUserStore = create((set, get) => ({
   setData: (data) => {
     set({ data });
   },
-  setCursor: (cursor) => {
-    set({ cursor });
+  setCurrentCursor: (currentCursor) => {
+    set({ currentCursor });
   },
 }));
 

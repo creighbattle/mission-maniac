@@ -9,7 +9,7 @@ const stats = [
 export default function Stats() {
   return (
     <div className="">
-      <dl className="mt-5 grid grid-cols-2 gap-5 sm:grid-cols-3">
+      <dl className="mt-5 grid grid-cols-2 gap-5 sm:grid-cols-3 mb-5">
         {stats.map((item) => (
           <div
             key={item.name}

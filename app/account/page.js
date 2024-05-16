@@ -7,8 +7,12 @@ import useUserStore from "../stores/userStore";
 import ManiacNewbie from "./maniac/ManiacNewbie";
 import { useGetUserAccount } from "../hooks/useGetUser";
 import ClipLoader from "react-spinners/ClipLoader";
-import Requests from "./requests/Requests";
+import Requests from "./missions/Missions";
 import Recruits from "./recruits/Recruits";
+import Supports from "./supports/Supports";
+import Spectate from "./spectate/Spectate";
+import Settings from "./settings/Settings";
+import Username from "../global-components/Username";
 
 export default function Account() {
   useGetUserAccount();
@@ -36,13 +40,29 @@ export default function Account() {
       <div className="flex justify-center pb-2 bg-white pt-24 px-4">
         <div className="flex justify-between items-center  w-full max-w-7xl">
           <div className="text-white">yo trev</div>
-          <div className="flex items-center">
-            <img
+          <div className="flex flex-col justify-center items-center">
+            {/* <img
               className="inline-block h-14 w-14 rounded-full"
               src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
               alt=""
+            /> */}
+            {/* <p className="ml-2">@{user.username}</p> */}
+            <Username
+              username={user.username}
+              textColor={"black"}
+              outlineColor={"black"}
+              completedMissions={user.completed_missions}
+              recruits={user.recruits}
+              supports={user.supported_missions}
             />
-            <p className="ml-2">@{user.username}</p>
+            <div className="flex items-center justify-center">
+              <img
+                className="h-5 w-5 rounded-full"
+                src="/binoculars.png"
+                alt=""
+              />
+              <p className="ml-2">{user.spectators}</p>
+            </div>
           </div>
           <div className="text-white">yo dan</div>
         </div>
@@ -51,16 +71,25 @@ export default function Account() {
         <div className="text-white px-4 mt-4 flex flex-col justify-center tracking-wider">
           <AccountTabs setTab={setTab} />
           <div className={tab === 0 ? "" : "hidden"}>
-            <AccountStats />
+            <AccountStats tab={tab} />
           </div>
           <div className={tab === 1 ? "" : "hidden"}>
-            <ManiacNewbie />
+            <ManiacNewbie tab={tab} />
           </div>
           <div className={tab === 2 ? "" : "hidden"}>
-            <Requests />
+            <Requests tab={tab} />
           </div>
           <div className={tab === 3 ? "" : "hidden"}>
-            <Recruits />
+            <Recruits tab={tab} />
+          </div>
+          <div className={tab === 4 ? "" : "hidden"}>
+            <Supports tab={tab} />
+          </div>
+          <div className={tab === 5 ? "" : "hidden"}>
+            <Spectate tab={tab} />
+          </div>
+          <div className={tab === 6 ? "" : "hidden"}>
+            <Settings tab={tab} />
           </div>
           {/* {tab === 0 && <AccountStats />}
           {tab === 1 && <ManiacNewbie />}

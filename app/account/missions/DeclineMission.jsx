@@ -1,13 +1,79 @@
+import useNotificationStore from "@/app/stores/notificationStore";
+import useUserStore from "@/app/stores/userStore";
 import { Dialog } from "@headlessui/react";
+import { fetchAuthSession } from "aws-amplify/auth";
+import { useState } from "react";
+import { ClipLoader } from "react-spinners";
 
 export default function DeclineMission({
   setView,
   setOpen,
-  declineReason,
-  setDeclineReason,
-  inappropriate,
-  setInappropriate,
+  missions,
+  setMissions,
 }) {
+  const [loading, setLoading] = useState();
+  const [declineReason, setDeclineReason] = useState("");
+  const [isInappropriate, setIsInappropriate] = useState(false);
+  const { setShowNotification, setNTitle, setNMessage, setNError } =
+    useNotificationStore();
+  const { selectedData } = useUserStore();
+  const [error, setError] = useState("");
+
+  const handleDecline = async () => {
+    setError("");
+    setLoading(true);
+    let jwt;
+    try {
+      const authSession = await fetchAuthSession();
+      jwt = authSession.tokens.accessToken.toString();
+    } catch (error) {
+      console.log(error);
+      return new Error("Error fetching auth session");
+    }
+
+    try {
+      const response = await fetch(
+        "http://10.0.0.222:3005/api/decline-mission",
+        {
+          method: "POST",
+          mode: "cors",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${jwt}`,
+          },
+          body: JSON.stringify({
+            missionId: selectedData.mission_id,
+            declineReason,
+            isInappropriate,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        console.log(response);
+        const { message } = await response.json();
+        throw new Error(message);
+      }
+
+      setOpen(false);
+
+      setTimeout(() => {
+        setLoading(false);
+      }, 500);
+      setNError(false);
+      setShowNotification(true);
+      setNTitle("Mission Declined");
+      setNMessage("The mission has been declined.");
+
+      setMissions(
+        missions.filter((val) => val.mission_id !== selectedData.mission_id)
+      );
+    } catch (error) {
+      setError(error.message);
+      setLoading(false);
+    } finally {
+    }
+  };
   return (
     <div>
       <div className="absolute text-white top-7" onClick={() => setView(0)}>
@@ -75,7 +141,6 @@ export default function DeclineMission({
             autoComplete="off"
             rows={3}
             className="block w-full rounded-md border-0 py-1.5 px-2 bg-[#141414] text-white shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-green-400 sm:text-sm sm:leading-6 outline-none"
-            defaultValue={""}
           />
         </div>
       </div>
@@ -88,7 +153,7 @@ export default function DeclineMission({
           Mark inappropriate
         </label>
         <input
-          onChange={(e) => setInappropriate(!inappropriate)}
+          onChange={(e) => setIsInappropriate(!isInappropriate)}
           id="remember-me"
           name="remember-me"
           type="checkbox"
@@ -96,12 +161,28 @@ export default function DeclineMission({
         />
       </div>
       <div className="mt-5 sm:mt-6">
+        {error && (
+          <div>
+            <p className="text-[#FB87A1] mb-2 text-center">{error}</p>
+          </div>
+        )}
         <button
           type="button"
           className="inline-flex w-full justify-center rounded-md bg-gray-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600"
-          onClick={() => setView(1)}
+          onClick={handleDecline}
         >
-          Decline
+          {!loading ? (
+            "Decline"
+          ) : (
+            <ClipLoader
+              color={"black"}
+              loading={loading}
+              // cssOverride={override}
+              size={25}
+              aria-label="Loading Spinner"
+              data-testid="loader"
+            />
+          )}
         </button>
       </div>
     </div>
