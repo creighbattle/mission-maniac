@@ -1,10 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import useUserStore from "../stores/userStore";
-import {
-  fetchAuthSession,
-  fetchUserAttributes,
-  getCurrentUser,
-} from "aws-amplify/auth";
+import { fetchAuthSession, fetchUserAttributes } from "aws-amplify/auth";
 import { useRouter, usePathname, useParams } from "next/navigation";
 import { Amplify } from "aws-amplify";
 
@@ -17,16 +13,17 @@ Amplify.configure({
   },
 });
 
-export function useGetUser() {
-  const { setUsername, setEmail, username, setUser } = useUserStore();
+export function useGetUser(setError) {
+  const { setUser } = useUserStore();
   const router = useRouter();
   const params = useParams();
 
   useEffect(() => {
-    getUser(params.user);
+    getUser(params.user, setError);
   }, []);
 
-  const getUser = async (username) => {
+  const getUser = async (username, setError) => {
+    setUser(null);
     let currentUsername;
 
     try {
@@ -36,7 +33,7 @@ export function useGetUser() {
 
     // Directly make a request without checking session storage
     try {
-      const url = new URL("http://10.0.0.222:3005/api/get-user");
+      const url = new URL(process.env.NEXT_PUBLIC_GET_USER);
       url.searchParams.append("username", username);
       url.searchParams.append("currentUsername", currentUsername);
 
@@ -47,36 +44,38 @@ export function useGetUser() {
         },
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        console.log("success", data);
-        setUser(data.user);
-        return data;
-      } else {
-        throw new Error("Failed to fetch user profile");
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message);
       }
+
+      const data = await response.json();
+
+      setUser(data.user);
+      return data;
     } catch (error) {
-      console.log("Error fetching user profile:", error);
-      router.push("/");
+      if (error.message === "User does not exist") {
+        router.push("/");
+      } else {
+        setError(error.message);
+      }
     }
   };
-
-  return;
 }
 
-export function useGetUserAccount() {
+export function useGetUserAccount(setError) {
   const { setUser, setLoading, user } = useUserStore();
   const pathname = usePathname();
   const router = useRouter();
 
   useEffect(() => {
-    getUserAccount();
+    getUserAccount(setError);
   }, []);
 
-  const getUserAccount = async () => {
-    if (user) return;
+  const getUserAccount = async (setError) => {
+    if (user) setUser(null);
+    let jwt;
 
-    console.log("running");
     try {
       const userAttributes = await fetchUserAttributes();
       if (!userAttributes.preferred_username) {
@@ -84,47 +83,34 @@ export function useGetUserAccount() {
         return;
       }
 
-      const { user } = await getUser();
+      const authSession = await fetchAuthSession();
+      jwt = authSession.tokens.idToken.toString();
 
-      console.log(user);
+      const response = await fetch(process.env.NEXT_PUBLIC_GET_ACCOUNT, {
+        headers: {
+          Authorization: `Bearer ${jwt}`,
+          "Content-Type": "application/json",
+        },
+      });
 
-      setUser(user);
+      const data = await response.json();
+
+      setUser(data.user);
       setLoading(false);
+
+      return data;
     } catch (error) {
-      console.log(error);
-      console.log(pathname);
-      if (pathname === "/account") {
-        router.push("/signin");
-        return;
+      if (
+        error.message === "Failed to fetch" ||
+        error.message === "Server Error"
+      ) {
+        setError(error.message);
+      } else {
+        if (pathname === "/account") {
+          router.push("/signin");
+          return;
+        }
       }
     }
   };
 }
-
-const getUser = async () => {
-  let jwt;
-
-  try {
-    const authSession = await fetchAuthSession();
-    jwt = authSession.tokens.accessToken.toString();
-  } catch (error) {
-    console.log(error);
-    return new Error("Error fetching auth session");
-  }
-
-  try {
-    const response = await fetch("http://10.0.0.222:3005/api/test", {
-      headers: {
-        Authorization: `Bearer ${jwt}`,
-      },
-    });
-    if (!response.ok) {
-      router.push("/signin");
-      return;
-    }
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    return error;
-  }
-};

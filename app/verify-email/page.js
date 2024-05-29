@@ -1,10 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import { resendSignUpCode, confirmSignUp, autoSignIn } from "aws-amplify/auth";
+import {
+  resendSignUpCode,
+  confirmSignUp,
+  autoSignIn,
+  signIn,
+} from "aws-amplify/auth";
 import { useRouter } from "next/navigation";
 import { Amplify } from "aws-amplify";
 import useUserStore from "../stores/userStore";
+import useInfoStore from "../stores/infoStore";
+import { ClipLoader } from "react-spinners";
+import MoreInfo from "../global-components/MoreInfo";
 
 Amplify.configure({
   Auth: {
@@ -18,16 +26,24 @@ Amplify.configure({
 export default function VerifyEmail() {
   const [errors, setErrors] = useState("");
   const [code, setCode] = useState("");
-  const { email, setEmail } = useUserStore();
+  const { email, setEmail, password, setPassword } = useUserStore();
+  const { setShowInfo, setTitle, setInfoMessage } = useInfoStore();
+  const [resent, setResent] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [verifyCodeLoading, setVerifyCodeLoading] = useState(false);
   const router = useRouter();
 
   const resendCode = async () => {
+    if (loading) return;
     setErrors("");
+    setLoading(true);
     try {
       await resendSignUpCode({ username: email });
-      console.log("code resent successfully");
+      setTitle("Code Sent");
+      setInfoMessage("Please check your spam folder if you do not see it.");
+      setShowInfo(true);
+      setResent(true);
     } catch (err) {
-      console.log(err);
       if (err.message == "Username cannot be empty") {
         setErrors(
           "You need to provide an email in order to send Resend Activiation Code"
@@ -35,52 +51,53 @@ export default function VerifyEmail() {
       } else if (err.message == "Username/client id combination not found.") {
         setErrors("Email is invalid or cannot be found.");
       }
+    } finally {
+      setLoading(false);
     }
   };
 
   const onSubmit = async (e) => {
     e.preventDefault();
+    setVerifyCodeLoading(true);
     setErrors("");
 
     try {
-      const confirmSignUpOutput = await confirmSignUp({
+      await confirmSignUp({
         username: email,
         confirmationCode: code,
       });
 
-      //   const data = {
-      //     email,
-      //     userId: confirmSignUpOutput.userId,
-      //   };
-
       await autoSignIn();
-      //   await fetch("http://10.0.0.222:3005/api/create-user", {
-      //     method: "POST",
-      //     mode: "cors",
-      //     cache: "no-cache",
-      //     headers: {
-      //       "Content-Type": "application/json",
-      //     },
-      //     body: JSON.stringify(data),
-      //   });
 
-      router.push("/mission");
+      router.push("/new-account");
     } catch (error) {
-      console.log(error);
-      setErrors(error.message);
-
       if (
         error.message ===
         "The autoSignIn flow has not started, or has been cancelled/completed."
       ) {
-        router.push("/signin");
+        if (email && password) {
+          try {
+            await signIn({ username: email, password });
+            router.push("/new-account");
+            setPassword("");
+          } catch (error) {
+            router.push("/signin");
+          }
+        } else {
+          router.push("/signin");
+        }
+      } else {
+        setErrors(error.message);
       }
+    } finally {
+      setVerifyCodeLoading(false);
     }
   };
 
   return (
     <>
-      <div className="flex h-svh flex-1">
+      <MoreInfo />
+      <div className="flex h-svh flex-1 justify-center items-center">
         <div className="flex flex-1 flex-col justify-center px-4 py-12 sm:px-6 lg:flex-none lg:px-20 xl:px-24">
           <div className="mx-auto w-full max-w-sm lg:w-96">
             <div>
@@ -108,28 +125,7 @@ export default function VerifyEmail() {
                 >
                   <div>
                     <label
-                      htmlFor="email"
-                      className="block text-sm font-medium leading-6 text-white"
-                    >
-                      Email address
-                    </label>
-                    <div className="mt-2">
-                      <input
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="example@email.com"
-                        id="email"
-                        name="email"
-                        type="email"
-                        autoComplete="email"
-                        required
-                        className="block w-full rounded-md border-0 py-1.5 px-2 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-green-600 sm:text-sm sm:leading-6 outline-none caret-green-400"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label
-                      htmlFor="email"
+                      htmlFor="code"
                       className="block text-sm font-medium leading-6 text-white"
                     >
                       Code
@@ -145,36 +141,54 @@ export default function VerifyEmail() {
                       />
                     </div>
                   </div>
-                  <p className="text-sm leading-6 text-gray-200">
-                    Didn't get a code?{" "}
-                    <button
-                      type="button"
-                      onClick={resendCode}
-                      className="font-semibold text-green-400 hover:text-green-500"
-                    >
-                      Resend
-                    </button>
-                  </p>
+                  {!resent && (
+                    <p className="text-sm leading-6 text-gray-200 flex items-center">
+                      Didn&apos;t get a code?{" "}
+                      <button
+                        type="button"
+                        onClick={resendCode}
+                        className="font-semibold text-green-400 hover:text-green-500 flex items-center"
+                      >
+                        {!loading ? (
+                          <span className="ml-1">Resend</span>
+                        ) : (
+                          <span className="flex items-center justify-center ml-1">
+                            <ClipLoader
+                              color={"#4ade80"}
+                              loading={loading}
+                              size={20}
+                              aria-label="Loading Spinner"
+                              data-testid="loader"
+                            />
+                          </span>
+                        )}
+                      </button>
+                    </p>
+                  )}
+
                   {errors && <p className="text-red-400">{errors}</p>}
                   <div>
                     <button
                       type="submit"
                       className="flex w-full justify-center rounded-md bg-green-400 px-3 py-1.5 text-sm font-semibold leading-6  shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600"
                     >
-                      Verify
+                      {!verifyCodeLoading ? (
+                        "Verify"
+                      ) : (
+                        <ClipLoader
+                          color={"black"}
+                          loading={verifyCodeLoading}
+                          size={25}
+                          aria-label="Loading Spinner"
+                          data-testid="loader"
+                        />
+                      )}
                     </button>
                   </div>
                 </form>
               </div>
             </div>
           </div>
-        </div>
-        <div className="relative hidden w-0 flex-1 lg:block">
-          <img
-            className="absolute inset-0 h-full w-full object-cover"
-            src="https://images.unsplash.com/photo-1496917756835-20cb06e75b4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1908&q=80"
-            alt=""
-          />
         </div>
       </div>
     </>

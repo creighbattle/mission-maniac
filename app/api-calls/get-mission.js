@@ -13,7 +13,7 @@ export default async function getMission({
     username = userAttributes.preferred_username;
   } catch (error) {}
 
-  const url = new URL("http://10.0.0.222:3005/api/get-mission");
+  const url = new URL(process.env.NEXT_PUBLIC_GET_MISSION);
   url.searchParams.append("missionId", missionId);
   url.searchParams.append("username", username);
 
@@ -27,14 +27,17 @@ export default async function getMission({
 
     const { data, user, recruiter } = await response.json();
 
-    console.log(data);
-
     setMission(data);
-    setUser(user);
-    setRecruiter(recruiter);
+    if (user) {
+      setUser(user);
+    } else {
+      setUser("deleted");
+    }
 
-    console.log(recruiter);
+    setRecruiter(recruiter);
+    return true;
   } catch (error) {
     setError(error.message);
+    return false;
   }
 }

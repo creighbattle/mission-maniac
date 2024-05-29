@@ -1,3 +1,4 @@
+import InfoLabel from "@/app/global-components/InfoLabel";
 import useNotificationStore from "@/app/stores/notificationStore";
 import useUserStore from "@/app/stores/userStore";
 import { Dialog } from "@headlessui/react";
@@ -25,15 +26,15 @@ export default function DeclineMission({
     let jwt;
     try {
       const authSession = await fetchAuthSession();
-      jwt = authSession.tokens.accessToken.toString();
+      // jwt = authSession.tokens.accessToken.toString();
+      jwt = authSession.tokens.idToken.toString();
     } catch (error) {
-      console.log(error);
       return new Error("Error fetching auth session");
     }
 
     try {
       const response = await fetch(
-        "http://10.0.0.222:3005/api/decline-mission",
+        process.env.NEXT_PUBLIC_WRITE_DECLINE_MISSION,
         {
           method: "POST",
           mode: "cors",
@@ -50,7 +51,6 @@ export default function DeclineMission({
       );
 
       if (!response.ok) {
-        console.log(response);
         const { message } = await response.json();
         throw new Error(message);
       }
@@ -130,7 +130,13 @@ export default function DeclineMission({
           htmlFor="mission"
           className="block text-sm font-medium leading-6 text-green-400"
         >
-          Reason
+          <InfoLabel
+            label={"Reason"}
+            title={"Reason"}
+            message={
+              "You can inform the Recruiter on why you are not accepting the mission here."
+            }
+          />
         </label>
         <div className="mt-2">
           <textarea
@@ -145,12 +151,17 @@ export default function DeclineMission({
         </div>
       </div>
 
-      <div className="col-span-full mt-5 flex items-center justify-between">
+      {/* <div className="col-span-full mt-5 flex items-center justify-between">
         <label
           htmlFor="mission"
           className="block text-sm font-medium leading-6 text-green-400"
         >
-          Mark inappropriate
+          <InfoLabel
+            label={"Mark inappropriate"}
+            title={"Mark inappropriate"}
+            message={`If this mission request is inappropriate in any way, you can mark it here. This will add a strike to the Recruiter's page. 
+              After 3 strikes (baseball fan what can I say), the user will be banned from recruiting and commenting until a strike is removed after a year.`}
+          />
         </label>
         <input
           onChange={(e) => setIsInappropriate(!isInappropriate)}
@@ -159,7 +170,7 @@ export default function DeclineMission({
           type="checkbox"
           className="h-4 w-4 rounded border-gray-300 focus:ring-green-600 accent-green-400"
         />
-      </div>
+      </div> */}
       <div className="mt-5 sm:mt-6">
         {error && (
           <div>
@@ -177,7 +188,6 @@ export default function DeclineMission({
             <ClipLoader
               color={"black"}
               loading={loading}
-              // cssOverride={override}
               size={25}
               aria-label="Loading Spinner"
               data-testid="loader"

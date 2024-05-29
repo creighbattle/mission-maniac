@@ -2,10 +2,8 @@ import { Dialog } from "@headlessui/react";
 import { memo, useState } from "react";
 import {
   PaymentElement,
-  Elements,
   useStripe,
   useElements,
-  CardElement,
 } from "@stripe/react-stripe-js";
 import { fetchAuthSession } from "aws-amplify/auth";
 import useUserStore from "../stores/userStore";
@@ -38,9 +36,8 @@ export default function PaymentForm({
 
     try {
       const authSession = await fetchAuthSession();
-      jwt = authSession.tokens.accessToken.toString();
+      jwt = authSession.tokens.idToken.toString();
     } catch (error) {
-      console.log(error);
       return new Error("Error fetching auth session");
     }
 
@@ -51,8 +48,7 @@ export default function PaymentForm({
     const { error: submitError } = await elements.submit();
     if (submitError) {
       // Show error to your customer
-      console.log("submit error");
-      console.log(submitError);
+
       setErrorMessage(submitError.message);
       return;
     }
@@ -61,10 +57,6 @@ export default function PaymentForm({
       capture_method: "manual",
     });
 
-    //const cardElement = elements.getElement(stripe.elements.CardElement);
-
-    //console.log(cardElement);
-
     // Get a reference to a payment method
     const { error: paymentMethodError, paymentMethod } =
       await stripe.createPaymentMethod({
@@ -72,14 +64,13 @@ export default function PaymentForm({
       });
 
     if (paymentMethodError) {
-      console.log(paymentMethodError);
       setErrorMessage(paymentMethodError.message);
       return;
     }
 
     // Fetch to create and confirm the PaymentIntent from your server
     const res = await fetch(
-      "http://10.0.0.222:3005/api/create-confirm-payment-intent",
+      process.env.NEXT_PUBLIC_WRITE_CREATE_MISSION_REQUEST,
       {
         method: "POST",
         headers: {
@@ -102,7 +93,6 @@ export default function PaymentForm({
 
     if (!res.ok) {
       setErrorMessage(result.message);
-      console.log(result.message);
     } else {
       // notification
 
@@ -154,12 +144,10 @@ export default function PaymentForm({
       <form onSubmit={handleSubmit}>
         <div className="space-y-0">
           <div className="">
-            <p className="mt-4 text-sm leading-6 text-gray-100 text-center">
-              Recruit @pekinwoof for a mission.
-            </p>
+            <p className="mt-4 text-sm leading-6 text-gray-100 text-center"></p>
             <PaymentElement className="mt-4" />
             {errorMessage && (
-              <p className="text-[#FB87A1] mt-4">{errorMessage}</p>
+              <p className="text-[#FB87A1] mt-4 text-center">{errorMessage}</p>
             )}
           </div>
         </div>
@@ -174,7 +162,6 @@ export default function PaymentForm({
               <ClipLoader
                 color={"black"}
                 loading={loading}
-                // cssOverride={override}
                 size={25}
                 aria-label="Loading Spinner"
                 data-testid="loader"

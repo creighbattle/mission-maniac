@@ -1,12 +1,9 @@
 import useUserStore from "@/app/stores/userStore";
 import CommentTextbox from "./CommentTextbox";
-import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import { ClipLoader } from "react-spinners";
 import { useEffect, useState } from "react";
-import useCursorStore from "@/app/stores/cursorStore";
 import getMissionComments from "@/app/api-calls/get-mission-comments";
 import Dropdown from "@/app/global-components/Dropdown";
-import toggleLike from "@/app/api-calls/toggle-like";
 import Comment from "./Comment";
 import { fetchUserAttributes } from "aws-amplify/auth";
 import DeleteCommentModal from "./DeleteCommentModal";
@@ -27,10 +24,19 @@ export default function MissionComments() {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [commentId, setCommentId] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [commentsLoading, setCommentsLoading] = useState(false);
+  const [missionCommentCount, setMissionCommentCount] = useState(0);
 
   const [comments, setComments] = useState([]);
   const [cursorId, setCursorId] = useState(null);
   const [cursorSortId, setCursorSortId] = useState(null);
+  const [loadMore, setLoadMore] = useState(false);
+
+  useEffect(() => {
+    if (mission?.mission_comments) {
+      setMissionCommentCount(parseInt(mission?.mission_comments));
+    }
+  }, [mission]);
 
   useEffect(() => {
     if (mission) {
@@ -45,6 +51,7 @@ export default function MissionComments() {
         comments,
         sortOption,
         setError,
+        setLoading: setCommentsLoading,
       });
     }
   }, [sortOption, mission]);
@@ -78,7 +85,27 @@ export default function MissionComments() {
       );
       setCommentId(null);
       setDeleteCommentError("");
+      setMissionCommentCount(missionCommentCount - 1);
     }
+  };
+
+  const handleButtonClick = async () => {
+    setLoadMore(true);
+    await getMissionComments({
+      firstCall: false,
+      missionId: mission.mission_id,
+      cursorId,
+      cursorSortId,
+      setCursorId,
+      setCursorSortId,
+      setComments,
+      comments,
+      sortOption,
+      setError,
+      setLoading: setCommentsLoading,
+    });
+
+    setLoadMore(false);
   };
 
   if (!mission) {
@@ -87,7 +114,6 @@ export default function MissionComments() {
         <ClipLoader
           color={"#4ade80"}
           loading={true}
-          // cssOverride={override}
           size={100}
           aria-label="Loading Spinner"
           data-testid="loader"
@@ -109,7 +135,8 @@ export default function MissionComments() {
       <Notification />
       <div className="flex items-center justify-between">
         <p className="text-white text-lg font-semibold">
-          {mission.commentCount} Comments
+          <span className="text-green-400">{missionCommentCount}</span>{" "}
+          {missionCommentCount == "1" ? "Comment" : "Comments"}
         </p>
         <label htmlFor="" className="text-white text-lg font-semibold">
           Sort By:
@@ -121,7 +148,31 @@ export default function MissionComments() {
           />
         </label>
       </div>
-      <CommentTextbox />
+      <CommentTextbox
+        comments={comments}
+        setComments={setComments}
+        setMissionCommentCount={setMissionCommentCount}
+        missionCommentCount={missionCommentCount}
+      />
+
+      {commentsLoading && (
+        <div className="w-full flex items-center justify-center mt-10">
+          <ClipLoader
+            color="#4ade80"
+            loading={commentsLoading}
+            size={75}
+            aria-label="Loading Spinner"
+            data-testid="loader"
+          />
+        </div>
+      )}
+
+      {!comments.length && !commentsLoading && (
+        <div className="flex items-center justify-center mt-10">
+          <p className="text-green-400">There aren&apos;t any comments yet.</p>
+        </div>
+      )}
+
       <ul role="list" className="divide-y divide-gray-100 px-0">
         {comments?.map((comment, idx) => {
           return (
@@ -135,6 +186,27 @@ export default function MissionComments() {
           );
         })}
       </ul>
+
+      {cursorId && !loading && (
+        <div className="w-full flex  mt-4">
+          <button
+            className="relative inline-flex items-center rounded-md bg-white  px-3 py-3  font-semibold shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600"
+            onClick={handleButtonClick}
+          >
+            {!loadMore ? (
+              "Load More"
+            ) : (
+              <ClipLoader
+                color={"black"}
+                loading={loadMore}
+                size={25}
+                aria-label="Loading Spinner"
+                data-testid="loader"
+              />
+            )}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

@@ -5,22 +5,22 @@ import useUserStore from "../stores/userStore";
 import Dropdown from "../global-components/Dropdown";
 import Mission from "./Mission";
 import getUserMissions from "../api-calls/get-user-missions";
-import useCursorStore from "../stores/cursorStore";
 import { useParams } from "next/navigation";
+import { ClipLoader } from "react-spinners";
 
-export default function MissionFeed() {
+export default function MissionFeed({ isUser }) {
   const [isVisible, setIsVisible] = useState(false);
   const [open, setOpen] = useState(false);
-  const { setData, data } = useUserStore();
+  const { setData, data, setSignInOpen, user } = useUserStore();
   const params = useParams();
   const [missionStatusOption, setMissionStatusOption] =
     useState("Active Missions");
-  const [missionStatusOptions, setMissionStatusOptions] = useState([
+  const missionStatusOptions = [
     "Active Missions",
     "Completed Missions",
     "Expired Missions",
     "Aborted Missions",
-  ]);
+  ];
   const [sortOption, setSortOption] = useState("Likes");
   const [sortOptions, setSortOptions] = useState([
     "Likes",
@@ -33,9 +33,11 @@ export default function MissionFeed() {
   const [cursorId, setCursorId] = useState(null);
   const [cursorSortId, setCursorSortId] = useState(null);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [loadMore, setLoadMore] = useState(false);
 
   useEffect(() => {
-    // fetchUserMissions();
+    setMissions([]);
     getUserMissions({
       firstCall: true,
       missionStatusOption,
@@ -50,12 +52,11 @@ export default function MissionFeed() {
       missions,
       setMissions,
       setError,
+      setLoading,
     });
   }, [sortOption, missionStatusOption]);
 
-  useEffect(() => {
-    console.log("im changing");
-  }, [missions]);
+  useEffect(() => {}, [missions]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -70,6 +71,7 @@ export default function MissionFeed() {
   }
 
   const handleButtonClick = async () => {
+    setLoadMore(true);
     await getUserMissions({
       firstCall: false,
       missionStatusOption,
@@ -84,7 +86,10 @@ export default function MissionFeed() {
       missions,
       setMissions,
       setError,
+      setLoading,
     });
+
+    setLoadMore(false);
   };
 
   return (
@@ -106,6 +111,29 @@ export default function MissionFeed() {
         </label>
       </div>
 
+      {loading && (
+        <div className="w-full flex items-center justify-center mt-10">
+          <ClipLoader
+            color="#4ade80"
+            loading={loading}
+            size={100}
+            aria-label="Loading Spinner"
+            data-testid="loader"
+          />
+        </div>
+      )}
+
+      {!missions.length && !loading && (
+        <div className="flex items-center justify-center mt-20">
+          <p className="text-green-400">
+            {!user.info_required
+              ? `There are 0 ${missionStatusOption.toLowerCase()}`
+              : "Not Accepting Missions"}
+            .
+          </p>
+        </div>
+      )}
+
       <ul role="list" className="">
         {missions?.map((el, index) => (
           <Mission
@@ -116,21 +144,44 @@ export default function MissionFeed() {
           />
         ))}
       </ul>
-      {cursorId && (
-        <button className="text-white" onClick={handleButtonClick}>
-          Load More fam
-        </button>
+      {cursorId && !loading && (
+        <div className="w-full flex  mt-4">
+          <button
+            className="relative inline-flex items-center rounded-md bg-white  px-3 py-3  font-semibold shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600"
+            onClick={handleButtonClick}
+          >
+            {!loadMore ? (
+              "Load More"
+            ) : (
+              <ClipLoader
+                color={"black"}
+                loading={loadMore}
+                size={25}
+                aria-label="Loading Spinner"
+                data-testid="loader"
+              />
+            )}
+          </button>
+        </div>
       )}
 
-      <div className="fixed bottom-4 right-4 mx-auto tracking-wider w-fit">
-        <button
-          onClick={() => setOpen(true)}
-          type="button"
-          className="relative inline-flex items-center rounded-md bg-white w-full px-3 py-3  font-semibold shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600"
-        >
-          Create Mission
-        </button>
-      </div>
+      {!user.info_required && (
+        <div className="fixed bottom-4 right-4 mx-auto tracking-wider w-fit">
+          <button
+            onClick={() => {
+              if (isUser) {
+                setOpen(true);
+              } else {
+                setSignInOpen(true);
+              }
+            }}
+            type="button"
+            className="relative inline-flex items-center rounded-md bg-white w-full px-3 py-3  font-semibold shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600"
+          >
+            Create Mission
+          </button>
+        </div>
+      )}
 
       <CreateMissionModal open={open} setOpen={setOpen} />
     </div>

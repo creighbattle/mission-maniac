@@ -8,12 +8,17 @@ const useUserStore = create((set, get) => ({
   currentCursor: 0,
   signUpOutput: null,
   email: "",
+  password: "",
   username: "",
   loading: true,
   amount: 0,
+  signInOpen: false,
   error: null,
   setUser: (user) => {
     set({ user });
+  },
+  setSignInOpen: (signInOpen) => {
+    set({ signInOpen });
   },
   setAmount: (amount) => {
     set({ amount });
@@ -29,6 +34,9 @@ const useUserStore = create((set, get) => ({
   },
   setEmail: (email) => {
     set({ email });
+  },
+  setPassword: (password) => {
+    set({ password });
   },
   setUsername: (username) => {
     set({ username });

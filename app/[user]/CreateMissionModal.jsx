@@ -18,10 +18,8 @@ export default function CreateMissionModal({ open, setOpen }) {
     <Transition.Root show={open} as={Fragment}>
       <Dialog
         className="relative z-40"
-        onClick={() => console.log("dialog")}
         onClose={() => {
           if (showInfo) {
-            console.log("running");
             setShowInfo(false);
           } else {
             setOpen(false);
@@ -37,16 +35,10 @@ export default function CreateMissionModal({ open, setOpen }) {
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <div
-            className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
-            onClick={() => console.log("125")}
-          />
+          <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
         </Transition.Child>
 
-        <div
-          onClick={() => console.log("124")}
-          className="fixed inset-0 z-10 w-screen overflow-y-auto"
-        >
+        <div className="fixed inset-0 z-10 w-screen overflow-y-auto">
           <div className="flex min-h-full items-end justify-center text-center sm:items-center sm:p-0">
             <Transition.Child
               as={Fragment}
@@ -57,10 +49,7 @@ export default function CreateMissionModal({ open, setOpen }) {
               leaveFrom="opacity-100 translate-y-0 sm:scale-100"
               leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
             >
-              <Dialog.Panel
-                onClick={() => console.log("127")}
-                className="relative transform overflow-hidden rounded-t-lg sm:rounded-lg bg-[#141414] px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 w-full sm:w-full sm:max-w-sm sm:p-6"
-              >
+              <Dialog.Panel className="relative transform overflow-hidden rounded-t-lg sm:rounded-lg bg-[#141414] px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 w-full sm:w-full sm:max-w-sm sm:p-6">
                 {/* {view === 0 && <CreateMissionForm setView={setView} />} */}
                 {/* {view === 1 && <PaymentForm setView={setView} />} */}
                 <div className={view === 0 ? "" : "hidden"}>
@@ -74,6 +63,7 @@ export default function CreateMissionModal({ open, setOpen }) {
                     setMission={setMission}
                     message={message}
                     setMessage={setMessage}
+                    setOpen={setOpen}
                   />
                 </div>
 

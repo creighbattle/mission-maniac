@@ -1,9 +1,12 @@
+import InfoLabel from "@/app/global-components/InfoLabel";
 import useNotificationStore from "@/app/stores/notificationStore";
 import useUserStore from "@/app/stores/userStore";
 import { Dialog } from "@headlessui/react";
 import { fetchAuthSession } from "aws-amplify/auth";
 import { useState } from "react";
 import { ClipLoader } from "react-spinners";
+
+const MAX_MESSAGE_LENGTH = 500;
 
 export default function AbortMission({
   setView,
@@ -13,6 +16,7 @@ export default function AbortMission({
 }) {
   const [loading, setLoading] = useState();
   const [abortMessage, setAbortMessage] = useState("");
+  const [abortMessageLength, setAbortMessageLength] = useState(0);
 
   const { setShowNotification, setNTitle, setNMessage } =
     useNotificationStore();
@@ -25,28 +29,29 @@ export default function AbortMission({
     let jwt;
     try {
       const authSession = await fetchAuthSession();
-      jwt = authSession.tokens.accessToken.toString();
+      jwt = authSession.tokens.idToken.toString();
     } catch (error) {
-      console.log(error);
       return new Error("Error fetching auth session");
     }
 
     try {
-      const response = await fetch("http://10.0.0.222:3005/api/abort-mission", {
-        method: "POST",
-        mode: "cors",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${jwt}`,
-        },
-        body: JSON.stringify({
-          missionId: selectedData.mission_id,
-          abortMessage,
-        }),
-      });
+      const response = await fetch(
+        process.env.NEXT_PUBLIC_WRITE_ABORT_MISSION,
+        {
+          method: "POST",
+          mode: "cors",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${jwt}`,
+          },
+          body: JSON.stringify({
+            missionId: selectedData.mission_id,
+            abortMessage,
+          }),
+        }
+      );
 
       if (!response.ok) {
-        console.log(response);
         const { message } = await response.json();
         throw new Error(message);
       }
@@ -69,6 +74,15 @@ export default function AbortMission({
     } finally {
     }
   };
+
+  const handleMessageChange = (text) => {
+    const newMessage = text;
+    if (newMessage.length <= MAX_MESSAGE_LENGTH) {
+      setAbortMessage(newMessage);
+      setAbortMessageLength(newMessage.length);
+    }
+  };
+
   return (
     <div>
       <div className="absolute text-white top-7" onClick={() => setView(3)}>
@@ -125,18 +139,26 @@ export default function AbortMission({
           htmlFor="mission"
           className="block text-sm font-medium leading-6 text-green-400"
         >
-          Reason
+          <InfoLabel
+            label={"Reason"}
+            title={"Reason"}
+            message={`Inform your Recruiter and Supporters on the reason why you are aborting this mission. 
+          This message will be viewable in the mission report. The mission Recruiter and mission Supporters will be able to collect a refund up to 95% - 30 cents.`}
+          />
         </label>
         <div className="mt-2">
           <textarea
             value={abortMessage}
-            onChange={(e) => setAbortMessage(e.target.value)}
+            onChange={(e) => handleMessageChange(e.target.value)}
             id="mission"
             name="mission"
             autoComplete="off"
             rows={3}
             className="block w-full rounded-md border-0 py-1.5 px-2 bg-[#141414] text-white shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-green-400 sm:text-sm sm:leading-6 outline-none"
           />
+          <p className="text-sm text-gray-400 mt-1">
+            {abortMessageLength} / {MAX_MESSAGE_LENGTH} characters
+          </p>
         </div>
       </div>
 
@@ -157,7 +179,6 @@ export default function AbortMission({
             <ClipLoader
               color={"black"}
               loading={loading}
-              // cssOverride={override}
               size={25}
               aria-label="Loading Spinner"
               data-testid="loader"

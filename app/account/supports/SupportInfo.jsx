@@ -1,12 +1,11 @@
 "use client";
-
 import refundMission from "@/app/api-calls/refund-mission";
 import useUserStore from "@/app/stores/userStore";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ClipLoader } from "react-spinners";
 
 export default function SupportInfo({
-  setView,
   setOpen,
   missionStatusOption,
   supports,
@@ -15,6 +14,7 @@ export default function SupportInfo({
   const { mission } = useUserStore();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const router = useRouter();
 
   function capitalizeFirstLetter(string) {
     if (missionStatusOption === "Expired Supports") {
@@ -61,7 +61,7 @@ export default function SupportInfo({
       </div>
       <div className="mt-2">
         <p className="text-green-400">Mission: </p>
-        <div className="ml-2 line-clamp-3">
+        <div className="ml-2">
           <p>{mission?.mission}</p>
         </div>
       </div>
@@ -77,13 +77,13 @@ export default function SupportInfo({
         </div>
       )}
 
-      <div className="flex mt-5">
+      <div className="flex flex-col mt-5">
         {(missionStatusOption === "Aborted Supports" ||
           missionStatusOption === "Expired Supports") &&
           !mission.refunded && (
             <button
               type="button"
-              className="inline-flex w-full justify-center rounded-md bg-gray-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600"
+              className="inline-flex w-full justify-center rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600"
               onClick={async () =>
                 refundMission({
                   supportId: mission.support_id,
@@ -112,17 +112,8 @@ export default function SupportInfo({
 
         <button
           type="button"
-          style={{
-            marginLeft:
-              missionStatusOption === "Aborted Supports" && !mission.refunded
-                ? 20
-                : missionStatusOption === "Expired Supports" &&
-                  !mission.refunded
-                ? 20
-                : 0,
-          }}
-          className="inline-flex w-full justify-center  rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600"
-          onClick={() => setView(2)}
+          className="inline-flex w-full justify-center mt-2 rounded-md bg-gray-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600"
+          onClick={() => router.push(`/mission/${mission.mission_id}`)}
         >
           View Mission
         </button>

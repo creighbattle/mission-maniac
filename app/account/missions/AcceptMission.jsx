@@ -1,3 +1,4 @@
+import InfoLabel from "@/app/global-components/InfoLabel";
 import useNotificationStore from "@/app/stores/notificationStore";
 import useUserStore from "@/app/stores/userStore";
 import { Dialog } from "@headlessui/react";
@@ -25,15 +26,14 @@ export default function AcceptMission({
     let jwt;
     try {
       const authSession = await fetchAuthSession();
-      jwt = authSession.tokens.accessToken.toString();
+      jwt = authSession.tokens.idToken.toString();
     } catch (error) {
-      console.log(error);
       return new Error("Error fetching auth session");
     }
 
     try {
       const response = await fetch(
-        "http://10.0.0.222:3005/api/accept-mission",
+        process.env.NEXT_PUBLIC_WRITE_ACCEPT_MISSION,
         {
           method: "POST",
           mode: "cors",
@@ -50,7 +50,6 @@ export default function AcceptMission({
       );
 
       if (!response.ok) {
-        console.log(response);
         const { message } = await response.json();
         throw new Error(message);
       }
@@ -130,7 +129,15 @@ export default function AcceptMission({
           htmlFor="username"
           className="block text-sm font-medium leading-6 text-green-400"
         >
-          Funding Goal
+          <InfoLabel
+            label={"Funding Goal"}
+            title={"Funding Goal"}
+            message={`You can set an amount it would take for you to complete this mission. 
+            Even if the goal isn't reached, you can still complete the mission. 
+            This goal helps your viewers understand the challenge level. 
+            If the goal is reached and the recruiter has set an expiration time, 
+            the expiration date will reset to the time the goal was reached plus the expiration period set by the recruiter.`}
+          />
         </label>
         <div className="mt-2 w-full">
           <div className="flex rounded-md shadow-sm ring-1 ring-inset ring-gray-300 focus-within:ring-2 focus-within:ring-inset focus-within:ring-green-600 sm:max-w-md outline-none  text-white">
@@ -181,7 +188,6 @@ export default function AcceptMission({
             <ClipLoader
               color={"black"}
               loading={loading}
-              // cssOverride={override}
               size={25}
               aria-label="Loading Spinner"
               data-testid="loader"

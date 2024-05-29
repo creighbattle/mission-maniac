@@ -1,4 +1,6 @@
 "use client";
+import InfoLabel from "@/app/global-components/InfoLabel";
+import Username from "@/app/global-components/Username";
 import useUserStore from "@/app/stores/userStore";
 import { formatDistanceToNow, parseISO } from "date-fns";
 
@@ -30,39 +32,92 @@ export default function RequestInfo({ setView, setOpen }) {
         <h3 className="text-green-400">Mission Details</h3>
       </div>
       <div className="flex items-center justify-between mt-5">
-        <p className="text-green-400">Recruiter: </p>
-        <p>@{selectedData.recruiter}</p>
+        <InfoLabel
+          label={"Recruiter"}
+          title={"Recruiter"}
+          message={"The Recruiter who requested the mission."}
+        />
+
+        {selectedData?.recruiter ? (
+          <Username
+            username={selectedData.recruiter}
+            textColor={"#bbf7d0"}
+            outlineColor={"white"}
+            completedMissions={selectedData.completed_missions}
+            recruits={selectedData.completed_recruits}
+            supports={selectedData.completed_supports}
+          />
+        ) : (
+          <p className="text-[#bbf7d0]">Account Deleted</p>
+        )}
       </div>
       <div className="flex items-center justify-between mt-2">
-        <p className="text-green-400">Recruited: </p>
+        <InfoLabel
+          label={"Recruited"}
+          title={"Recruited"}
+          message={
+            "How long ago you were recruited for this mission. You will have between 5-7 days to accept or decline a mission before it auto deletes itself."
+          }
+        />
         {formatDistanceToNow(parseISO(selectedData?.created_at), {
           addSuffix: true,
         })}
       </div>
       <div className="flex items-center justify-between mt-2">
-        <p className="text-green-400">Fund: </p>
+        <InfoLabel
+          label={"Fund"}
+          title={"Fund"}
+          message={
+            "The amount the Recruiter initially funded the mission with. If you are to accept, you can set a funding goal which Supporters can then help reach."
+          }
+        />
         <p>${selectedData?.funds}</p>
       </div>
+      <div className="flex items-center justify-between mt-2">
+        <InfoLabel
+          label={"Expires"}
+          title={"Expires"}
+          message={`This is the time you have to complete the mission or reach the funding goal after accepting it. 
+            If the funding goal is reached, the expiration date will reset. 
+            For example, if the recruiter sets an expiration time of 14 days and the funding goal is met on the 7th day, 
+            the new expiration date will be 14 days from when the goal was reached.`}
+        />
+
+        <p>{selectedData?.expire}</p>
+      </div>
       <div className="mt-2">
-        <p className="text-green-400">Mission: </p>
-        <div className="ml-2 line-clamp-3">
+        <InfoLabel
+          label={"Mission"}
+          title={"Mission"}
+          message={`This is the actual request the Recruiter wants you to complete.`}
+        />
+        <div className="ml-2">
           <p>{selectedData?.mission}</p>
         </div>
       </div>
-      <div className="mt-2">
-        <p className="text-green-400">Message: </p>
-        <div className="ml-2 line-clamp-3">
-          <p>{selectedData?.mission_message}</p>
+      {selectedData?.mission_message && (
+        <div className="mt-2">
+          <InfoLabel
+            label={"Message"}
+            title={"Message"}
+            message={`This is a message from the Recruiter unrelated to the Mission. This message is private.`}
+          />
+          <div className="ml-2">
+            <p>{selectedData?.mission_message}</p>
+          </div>
         </div>
-      </div>
+      )}
+
       <div className="mt-2">
-        <p className="text-green-400">Mission Reminder: </p>
+        <InfoLabel
+          label={"Mission Reminder"}
+          title={"Mission Reminder"}
+          message={`This is just a friendly reminder to not accept missions that may cause harm to yourself or others.`}
+        />
         <p className="ml-2">
           Remember to use your own common sense when deciding on which missions
-          to accept. There are many good recruiter's out there, but when there
-          is good... there must be bad. If a recruiter says anything negative
-          towards you, just know they are a LOSER & HATER :0! ... u are the
-          best! Have fun be safe &lt;3
+          to accept. There are many good recruiter&apos;s out there, but when
+          there is good... there must be bad. Have fun be safe.
         </p>
       </div>
 

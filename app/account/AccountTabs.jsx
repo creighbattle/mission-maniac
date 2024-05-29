@@ -1,13 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { signOut } from "aws-amplify/auth";
-
-const tabs = [
-  { name: "Stats", href: "#", current: false },
-  { name: "Requests", href: "#", current: false },
-  { name: "Badges", href: "#", current: true },
-];
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
@@ -15,24 +8,13 @@ function classNames(...classes) {
 
 export default function AccountTabs({ setTab }) {
   const [tabs, setTabs] = useState([
-    { name: "Stats", current: true, onClick: () => console.log("hi") },
-    { name: "Maniac", current: false, onClick: () => console.log("hi") },
-    { name: "Missions", current: false, onClick: () => console.log("hi") },
-    { name: "Recruits", current: false, onClick: () => console.log("hi") },
-    { name: "Supports", current: false, onClick: () => console.log("hi") },
-    // { name: "Badges", current: false, onClick: () => console.log("hi") },
-    { name: "Spectating", current: false, onClick: () => console.log("hi") },
-    { name: "Settings", current: false, onClick: () => console.log("hi") },
-
-    // {
-    //   name: "Logout",
-    //   current: false,
-    //   onClick: async () => {
-    //     await signOut()
-    //       .then(() => console.log("user signed out"))
-    //       .catch((err) => console.log(err));
-    //   },
-    // },
+    { name: "Stats", current: true },
+    { name: "Maniac", current: false },
+    { name: "Missions", current: false },
+    { name: "Recruits", current: false },
+    { name: "Supports", current: false },
+    { name: "Spectating", current: false },
+    { name: "Settings", current: false },
   ]);
 
   const handleTabClick = (idx) => {
@@ -49,8 +31,6 @@ export default function AccountTabs({ setTab }) {
     }
     setTab(idx);
     setTabs(tabsCopy);
-
-    tabsCopy[idx].onClick();
   };
 
   return (

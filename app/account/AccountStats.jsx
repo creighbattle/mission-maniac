@@ -7,14 +7,12 @@ export default function AccountStats() {
     { name: "Completed Missions", stat: user.completed_missions },
     { name: "Mission Likes", stat: user.mission_likes },
     { name: "Recruits", stat: user.recruits },
-    { name: "Recruit Likes", stat: user.recruit_likes },
     { name: "Supports", stat: user.supported_missions },
-    { name: "Comment Likes", stat: user.comment_likes },
   ];
 
   return (
     <div>
-      <dl className="mt-5 grid grid-cols-2 gap-5 sm:grid-cols-3">
+      <dl className="mt-5 grid grid-cols-2 gap-5 sm:grid-cols-1">
         {stats.map((item) => (
           <div
             key={item.name}

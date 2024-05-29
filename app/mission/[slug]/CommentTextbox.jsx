@@ -1,15 +1,13 @@
 "use client";
-import { Fragment, useState } from "react";
+import { useState } from "react";
 import {
   FaceFrownIcon,
   FaceSmileIcon,
   FireIcon,
   HandThumbUpIcon,
   HeartIcon,
-  PaperClipIcon,
   XMarkIcon,
 } from "@heroicons/react/20/solid";
-import { Listbox, Transition } from "@headlessui/react";
 import { ClipLoader } from "react-spinners";
 import useNotificationStore from "@/app/stores/notificationStore";
 import { fetchAuthSession } from "aws-amplify/auth";
@@ -64,11 +62,16 @@ function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
 
-export default function CommentTextbox() {
+export default function CommentTextbox({
+  comments,
+  setComments,
+  setMissionCommentCount,
+  missionCommentCount,
+}) {
   const [selected, setSelected] = useState(moods[5]);
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
-  const { mission } = useUserStore();
+  const { mission, setSignInOpen, user } = useUserStore();
   const { setShowNotification, setNTitle, setNMessage, setNError } =
     useNotificationStore();
 
@@ -82,26 +85,24 @@ export default function CommentTextbox() {
 
     try {
       const authSession = await fetchAuthSession();
-      jwt = authSession.tokens.accessToken.toString();
+      jwt = authSession.tokens.idToken.toString();
     } catch (error) {
-      console.log(error);
+      setSignInOpen(true);
+      setLoading(false);
       return new Error("Error fetching auth session");
     }
 
-    const res = await fetch(
-      "http://10.0.0.222:3005/api/create-mission-comment",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${jwt}`,
-        },
-        body: JSON.stringify({
-          missionId: mission.mission_id,
-          missionComment: text,
-        }),
-      }
-    );
+    const res = await fetch(process.env.NEXT_PUBLIC_WRITE_MISSION_COMMENT, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${jwt}`,
+      },
+      body: JSON.stringify({
+        missionId: mission.mission_id,
+        missionComment: text,
+      }),
+    });
 
     const result = await res.json();
 
@@ -109,13 +110,45 @@ export default function CommentTextbox() {
       setShowNotification(true);
       setNError(true);
       setNTitle("Uh oh!");
-      setNMessage(result.message);
+      if (result.message === "You have already commented on this mission.") {
+        setNMessage(result.message);
+      } else {
+        setNMessage(
+          "We had trouble uploading your comment. Please try again in a bit."
+        );
+      }
     } else {
       setShowNotification(true);
       setNError(false);
       setNTitle("Comment Uploaded");
       setNMessage("Your comment has been successfully uploaded");
       setText("");
+      const {
+        username,
+        completed_missions,
+        supported_missions,
+        recruits,
+        missionId,
+        comment_id,
+        created_at,
+      } = result;
+      const comment = {
+        username,
+        completed_missions,
+        supported_missions,
+        recruits,
+        mission_id: missionId,
+        comment_id,
+        user_has_liked: false,
+        created_at,
+        comment_likes: 0,
+        mission_comment: text,
+      };
+
+      const tmp = [...comments];
+      tmp.unshift(comment);
+      setComments(tmp);
+      setMissionCommentCount(missionCommentCount + 1);
     }
 
     setLoading(false);
@@ -149,7 +182,7 @@ export default function CommentTextbox() {
           </div>
           {text && (
             <div className="absolute inset-x-0 bottom-0 flex justify-between py-2 pl-3 pr-2">
-              <div className="flex items-center space-x-5">
+              {/* <div className="flex items-center space-x-5">
                 <div className="flex items-center">
                   <button
                     type="button"
@@ -245,7 +278,8 @@ export default function CommentTextbox() {
                     )}
                   </Listbox>
                 </div>
-              </div>
+              </div> */}
+              <div></div>
               <div className="flex-shrink-0">
                 <button
                   type="submit"
@@ -257,7 +291,6 @@ export default function CommentTextbox() {
                     <ClipLoader
                       color={"black"}
                       loading={loading}
-                      // cssOverride={override}
                       size={25}
                       aria-label="Loading Spinner"
                       data-testid="loader"

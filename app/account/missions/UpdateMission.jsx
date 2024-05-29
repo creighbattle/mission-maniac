@@ -5,9 +5,12 @@ import { fetchAuthSession } from "aws-amplify/auth";
 import { useEffect, useState } from "react";
 import { ClipLoader } from "react-spinners";
 
-export default function UpdateMission({ setView, setOpen }) {
+const MAX_MESSAGE_LENGTH = 500;
+
+export default function UpdateMission({ setView, setOpen, setMissions }) {
   const [loading, setLoading] = useState(false);
   const [maniacMessage, setManiacMessage] = useState("");
+  const [maniacMessageLength, setManiacMessageLength] = useState(0);
   const [missionLink1, setMissionLink1] = useState("");
   const [missionLink2, setMissionLink2] = useState("");
   const [missionLink3, setMissionLink3] = useState("");
@@ -22,7 +25,7 @@ export default function UpdateMission({ setView, setOpen }) {
 
   useEffect(() => {
     // set info to selecteddata here
-    console.log(selectedData.mission_link_1);
+
     setMissionLink1(selectedData.mission_link_1);
     setMissionLink2(selectedData.mission_link_2);
     setMissionLink3(selectedData.mission_link_3);
@@ -33,7 +36,13 @@ export default function UpdateMission({ setView, setOpen }) {
     setManiacMessage(
       selectedData.maniac_message ? selectedData.maniac_message : ""
     );
-  }, []);
+
+    setManiacMessageLength(
+      selectedData?.maniac_message ? selectedData.maniac_message.length : 0
+    );
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedData]);
 
   const handleUpdate = async () => {
     setError("");
@@ -41,15 +50,14 @@ export default function UpdateMission({ setView, setOpen }) {
     let jwt;
     try {
       const authSession = await fetchAuthSession();
-      jwt = authSession.tokens.accessToken.toString();
+      jwt = authSession.tokens.idToken.toString();
     } catch (error) {
-      console.log(error);
       return new Error("Error fetching auth session");
     }
 
     try {
       const response = await fetch(
-        "http://10.0.0.222:3005/api/update-mission",
+        process.env.NEXT_PUBLIC_WRITE_UPDATE_MISSION,
         {
           method: "POST",
           mode: "cors",
@@ -70,7 +78,6 @@ export default function UpdateMission({ setView, setOpen }) {
       );
 
       if (!response.ok) {
-        console.log(response);
         const { message } = await response.json();
         throw new Error(message);
       }
@@ -83,15 +90,62 @@ export default function UpdateMission({ setView, setOpen }) {
       setShowNotification(true);
       setNTitle("Mission Files Updated");
       setNMessage("The mission has been updated.");
+
+      const updatedMission = {
+        ...selectedData,
+        maniacMessage,
+        mission_link_1: missionLink1,
+        mission_link_2: missionLink2,
+        mission_link_3: missionLink3,
+        mission_link_4: missionLink4,
+        mission_link_5: missionLink5,
+      };
+
+      setMissions((prevMissions) => {
+        const updatedMissions = prevMissions.map((mission) =>
+          mission.mission_id === selectedData.mission_id
+            ? updatedMission
+            : mission
+        );
+
+        // Log updated missions to verify the change
+
+        return updatedMissions;
+      });
+
+      setManiacMessage("");
+      setMissionLink1("");
+      setMissionLink2("");
+      setMissionLink3("");
+      setMissionLink4("");
+      setMissionLink5("");
     } catch (error) {
       setError(error.message);
       setLoading(false);
     } finally {
     }
   };
+
+  const handleMessageChange = (text) => {
+    const newMessage = text;
+    if (newMessage.length <= MAX_MESSAGE_LENGTH) {
+      setManiacMessage(newMessage);
+      setManiacMessageLength(newMessage.length);
+    }
+  };
+
   return (
     <div>
-      <div className="absolute text-white top-7" onClick={() => setView(6)}>
+      <div
+        className="absolute text-white top-7"
+        onClick={() => {
+          if (selectedData.mission_status === "active") {
+            setView(3);
+          } else {
+            setView(6);
+          }
+        }}
+      >
         <svg
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
@@ -147,22 +201,27 @@ export default function UpdateMission({ setView, setOpen }) {
         >
           {selectedData.mission_status === "aborted"
             ? "Abort Reason"
-            : selectedData.mission_status === "completed"
+            : selectedData.mission_status === "completed" ||
+              selectedData.mission_status === "active"
             ? "Message"
             : "Decline Reason"}
         </label>
         <div className="mt-2">
           <textarea
             value={maniacMessage}
-            onChange={(e) => setManiacMessage(e.target.value)}
+            onChange={(e) => handleMessageChange(e.target.value)}
             name=""
             autoComplete="off"
             rows={3}
-            className="block w-full rounded-md border-0 py-1.5 px-2 bg-[#141414] text-white shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-green-400 sm:text-sm sm:leading-6 outline-none"
+            className="block w-full border-0 py-1.5 px-2 bg-[#141414] text-white shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-green-400 sm:text-sm sm:leading-6 outline-none"
           />
         </div>
+        <p className="text-sm text-gray-400 mt-1">
+          {maniacMessageLength} / {MAX_MESSAGE_LENGTH} characters
+        </p>
       </div>
 
+      {/* 
       {selectedData.mission_status === "declined" &&
         isInappropriate !== null && (
           <div className="col-span-full mt-5 flex items-center justify-between">
@@ -181,7 +240,7 @@ export default function UpdateMission({ setView, setOpen }) {
               className="h-4 w-4 rounded border-gray-300 focus:ring-green-600 accent-green-400"
             />
           </div>
-        )}
+        )} */}
 
       {selectedData.mission_status === "completed" && (
         <>
@@ -304,7 +363,6 @@ export default function UpdateMission({ setView, setOpen }) {
             <ClipLoader
               color={"black"}
               loading={loading}
-              // cssOverride={override}
               size={25}
               aria-label="Loading Spinner"
               data-testid="loader"

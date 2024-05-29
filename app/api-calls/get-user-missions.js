@@ -1,4 +1,4 @@
-import { fetchAuthSession, fetchUserAttributes } from "aws-amplify/auth";
+import { fetchUserAttributes } from "aws-amplify/auth";
 
 export default async function getUserMissions({
   firstCall,
@@ -12,19 +12,19 @@ export default async function getUserMissions({
   sortOption,
   missions,
   setMissions,
+  setLoading,
 }) {
+  if (firstCall) {
+    setCursorId(null);
+    setCursorSortId(null);
+    setLoading(true);
+    cursorSortId = null;
+    cursorId = null;
+  }
   let data = [];
 
-  console.log("im runing here get user");
-
   if (!firstCall) {
-    console.log("running");
     data = [...missions];
-  }
-
-  if (firstCall) {
-    cursorId = null;
-    cursorSortId = null;
   }
 
   let missionStatus = "pending";
@@ -32,15 +32,16 @@ export default async function getUserMissions({
   let order = "DESC";
   let limit = 1;
 
-  console.log(sortOption);
-
   switch (sortOption) {
     case "Oldest":
       order = "ASC";
-      limit = 2;
+      limit = 10;
       break;
     case "Funding":
       sortBy = "funds";
+      break;
+    case "Likes":
+      sortBy = "mission_likes";
       break;
     default:
       break;
@@ -68,11 +69,10 @@ export default async function getUserMissions({
     const userAttributes = await fetchUserAttributes();
     currentUsername = userAttributes.preferred_username;
   } catch (error) {
-    console.log(error);
-    return new Error("Error fetching auth session");
+    // return new Error("Error fetching auth session");
   }
 
-  const url = new URL("http://10.0.0.222:3005/api/get-user-missions");
+  const url = new URL(process.env.NEXT_PUBLIC_GET_USER_MISSIONS);
   url.searchParams.append("missionStatus", missionStatus);
   url.searchParams.append("limit", limit);
   url.searchParams.append("sortBy", sortBy);
@@ -92,8 +92,12 @@ export default async function getUserMissions({
 
     const { data: newData, nextCursor } = await response.json();
 
-    const decodedString = atob(nextCursor);
-    const cursorObject = JSON.parse(decodedString);
+    let cursorObject = null;
+
+    if (nextCursor) {
+      const decodedString = atob(nextCursor);
+      cursorObject = JSON.parse(decodedString);
+    }
 
     if (cursorObject) {
       setCursorId(cursorObject.missionId);
@@ -111,13 +115,12 @@ export default async function getUserMissions({
       newData.shift();
     }
 
-    console.log("data here:");
-    console.log(newData);
-
-    console.log(data);
-
     setMissions([...data, ...newData]);
   } catch (error) {
     setError(error.message);
+  } finally {
+    if (firstCall) {
+      setLoading(false);
+    }
   }
 }

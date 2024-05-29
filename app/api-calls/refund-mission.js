@@ -13,17 +13,14 @@ export default async function refundMission({
   setLoading(true);
   let jwt;
 
-  console.log(supportId);
-
   try {
     const authSession = await fetchAuthSession();
-    jwt = authSession.tokens.accessToken.toString();
+    jwt = authSession.tokens.idToken.toString();
   } catch (error) {
-    console.log(error);
     return new Error("Error fetching auth session");
   }
 
-  const url = new URL("http://10.0.0.222:3005/api/refund-mission");
+  const url = new URL(process.env.NEXT_PUBLIC_WRITE_REFUND_MISSION);
 
   try {
     const response = await fetch(url, {
@@ -58,10 +55,7 @@ export default async function refundMission({
     setSupports(supps);
 
     setOpen(false);
-
-    console.log(message);
   } catch (error) {
-    console.log(error);
     setError(error.message);
   } finally {
     setLoading(false);

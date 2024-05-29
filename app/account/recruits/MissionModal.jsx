@@ -49,27 +49,6 @@ export default function MissionModal({
                     missionStatusOption={missionStatusOption}
                   />
                 </div>
-                {/* <div className={view === 1 ? "" : "hidden"}>
-                  <DeclineMission setView={setView} setOpen={setOpen} />
-                </div>
-                <div className={view === 2 ? "" : "hidden"}>
-                  <AcceptMission setView={setView} setOpen={setOpen} />
-                </div>
-                <div className={view === 3 ? "" : "hidden"}>
-                  <ActiveMissionInfo setView={setView} setOpen={setOpen} />
-                </div>
-                <div className={view === 4 ? "" : "hidden"}>
-                  <AbortMission setView={setView} setOpen={setOpen} />
-                </div>
-                <div className={view === 5 ? "" : "hidden"}>
-                  <CompleteMission setView={setView} setOpen={setOpen} />
-                </div>
-                <div className={view === 6 ? "" : "hidden"}>
-                  <MissionSummary setView={setView} setOpen={setOpen} />
-                </div>
-                <div className={view === 7 ? "" : "hidden"}>
-                  <UpdateMission setView={setView} setOpen={setOpen} />
-                </div> */}
               </Dialog.Panel>
             </Transition.Child>
           </div>

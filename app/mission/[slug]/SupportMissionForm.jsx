@@ -50,7 +50,7 @@ export default function SupportMissionForm({
       />
       <div>
         <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-100 text-3xl font-bold">
-          M
+          S
         </div>
         <div className="mt-3 text-center sm:mt-5">
           <Dialog.Title
@@ -65,9 +65,7 @@ export default function SupportMissionForm({
       <form>
         <div className="space-y-0">
           <div className="">
-            <p className="mt-4 text-sm leading-6 text-gray-100 text-center">
-              Support @{user.username}&apos;s mission.
-            </p>
+            <p className="mt-4 text-sm leading-6 text-gray-100 text-center"></p>
 
             <div className="mt-4">
               <div className="flex items-center justify-between">
@@ -95,7 +93,6 @@ export default function SupportMissionForm({
                       if (/^\d*$/.test(value)) {
                         // This regex allows only digits
                         setFunds(value);
-                        console.log("yup");
                       }
                     }}
                     value={funds}
@@ -135,7 +132,7 @@ export default function SupportMissionForm({
                   />
                 </div>
               </div>
-              <div className="col-span-full mt-5 flex items-center justify-between">
+              {/* <div className="col-span-full mt-5 flex items-center justify-between">
                 <label
                   htmlFor="is-public-comment"
                   className="block text-sm font-medium leading-6 text-green-400"
@@ -148,7 +145,7 @@ export default function SupportMissionForm({
                   type="checkbox"
                   className="h-4 w-4 rounded border-gray-300 focus:ring-green-600 accent-green-400"
                 />
-              </div>
+              </div> */}
             </div>
           </div>
         </div>

@@ -10,6 +10,7 @@ import CompleteMission from "./CompleteMission";
 import UpdateMission from "./UpdateMission";
 import MissionSummary from "./MissionSummary";
 import MissionExpired from "./MissionExpired";
+import MoreInfo from "@/app/global-components/MoreInfo";
 
 export default function RequestModal({
   open,
@@ -51,6 +52,7 @@ export default function RequestModal({
               leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
             >
               <Dialog.Panel className="relative transform overflow-hidden rounded-t-lg sm:rounded-lg bg-[#141414] px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 w-full sm:w-full sm:max-w-sm sm:p-6">
+                <MoreInfo />
                 <div className={view === 0 ? "" : "hidden"}>
                   <RequestInfo setView={setView} setOpen={setOpen} />
                 </div>
@@ -93,7 +95,12 @@ export default function RequestModal({
                   <MissionSummary setView={setView} setOpen={setOpen} />
                 </div>
                 <div className={view === 7 ? "" : "hidden"}>
-                  <UpdateMission setView={setView} setOpen={setOpen} />
+                  <UpdateMission
+                    setView={setView}
+                    setOpen={setOpen}
+                    missions={missions}
+                    setMissions={setMissions}
+                  />
                 </div>
                 <div className={view === 8 ? "" : "hidden"}>
                   <MissionExpired setView={setView} setOpen={setOpen} />

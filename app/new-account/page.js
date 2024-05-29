@@ -8,7 +8,8 @@ import {
   fetchAuthSession,
 } from "aws-amplify/auth";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { ClipLoader } from "react-spinners";
 
 Amplify.configure({
   Auth: {
@@ -22,6 +23,8 @@ Amplify.configure({
 export default function NewAccount() {
   const { setUsername, username } = useUserStore();
   const router = useRouter();
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     checkForUsername();
@@ -30,19 +33,22 @@ export default function NewAccount() {
   const checkForUsername = async () => {
     const userAttributes = await fetchUserAttributes();
     if (userAttributes.preferred_username) {
-      router.push("/mission");
+      router.push("/");
     }
   };
 
   const onSubmit = async (e) => {
+    if (loading) return;
     e.preventDefault();
+    setLoading(true);
+    setError("");
 
     try {
       const userAttributes = await fetchUserAttributes();
       const authSession = await fetchAuthSession();
 
       if (userAttributes.preferred_username) {
-        router.push("/mission");
+        router.push("/");
         return;
       }
 
@@ -55,7 +61,7 @@ export default function NewAccount() {
         username,
       };
 
-      await fetch("http://10.0.0.222:3005/api/create-user", {
+      const response = await fetch(process.env.NEXT_PUBLIC_WRITE_USER, {
         method: "POST",
         mode: "cors",
         cache: "no-cache",
@@ -65,13 +71,32 @@ export default function NewAccount() {
         body: JSON.stringify(data),
       });
 
-      await updateUserAttribute({
-        userAttribute: { attributeKey: "preferred_username", value: username },
-      });
-
-      router.push("/mission");
+      if (response.ok) {
+        await updateUserAttribute({
+          userAttribute: {
+            attributeKey: "preferred_username",
+            value: username,
+          },
+        });
+        router.push("/");
+      } else {
+        const { message } = await response.json();
+        throw new Error(message);
+      }
     } catch (error) {
-      console.log(error);
+      if (error.message === "Username already exists") {
+        setError(error.message);
+      } else if (error.message === "Username is not valid") {
+        setError(
+          "Username can only contain letters, numbers, underscores and must be between 3-30 characters long."
+        );
+      } else {
+        setError(
+          "Sorry, there seems to be an issue with our servers. Please try again in a moment."
+        );
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -111,13 +136,23 @@ export default function NewAccount() {
               />
             </div>
           </div>
-
+          {error && <p className="text-[#FB87A1] text-center">{error}</p>}
           <div>
             <button
               type="submit"
               className="flex w-full justify-center rounded-md bg-green-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600"
             >
-              Give Me That
+              {!loading ? (
+                "Give Me That"
+              ) : (
+                <ClipLoader
+                  color={"black"}
+                  loading={loading}
+                  size={25}
+                  aria-label="Loading Spinner"
+                  data-testid="loader"
+                />
+              )}
             </button>
           </div>
         </form>

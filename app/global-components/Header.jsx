@@ -1,12 +1,34 @@
 "use client";
+import { useEffect, useState } from "react";
+import { fetchUserAttributes } from "aws-amplify/auth";
+import { Amplify } from "aws-amplify";
 
-import { useState } from "react";
-import Logo from "../../public/MissionManiacLogo.png";
+Amplify.configure({
+  Auth: {
+    Cognito: {
+      userPoolClientId: process.env.NEXT_PUBLIC_POOL_CLIENT_ID,
+      userPoolId: process.env.NEXT_PUBLIC_USER_POOL_ID,
+    },
+  },
+});
 
 export default function Header() {
   const [open, setOpen] = useState(false);
   const [showMenu, setShowMenu] = useState(true);
   const [showClose, setShowClose] = useState(false);
+  const [username, setUsername] = useState();
+
+  useEffect(() => {
+    checkForUser();
+  }, []);
+
+  const checkForUser = async () => {
+    try {
+      const userAttributes = await fetchUserAttributes();
+      const currentUsername = userAttributes.preferred_username;
+      setUsername(currentUsername);
+    } catch (error) {}
+  };
 
   const handleClick = () => {
     setOpen(!open);
@@ -30,7 +52,7 @@ export default function Header() {
             <h3 className="text-[5vw] font-medium tracking-[.27vw]">ission</h3>
             <h3 className="text-[5vw] font-medium tracking-[.27vw]">aniac</h3>
           </div> */}
-          <a href="">
+          <a href="/">
             <img src="/Logo.jpeg" alt="" className="h-14" />
           </a>
         </div>
@@ -73,18 +95,24 @@ export default function Header() {
       >
         <div className="h-svh flex flex-col px-8 tracking-wide">
           <ul className="text-white pt-32">
-            <li className="text-5xl">
+            {/* <li className="text-5xl">
               <a href="">Discover</a>
             </li>
             <li className="text-5xl mt-8">
               <a href="">Learn</a>
-            </li>
-            <li className="text-5xl mt-8">
-              <a href="">Login</a>
-            </li>
-            {/* <li className="text-5xl mt-8">
-              <a href="">Contact</a>
             </li> */}
+
+            {!username && (
+              <li className="text-5xl mt-8">
+                <a href="/signin">Login</a>
+              </li>
+            )}
+
+            {username && (
+              <li className="text-5xl mt-8">
+                <a href="/account">View Account</a>
+              </li>
+            )}
           </ul>
           <div className="mt-20 text-xl tracking-[.27vw] text-white">
             An interesting way to collaborate
@@ -94,13 +122,10 @@ export default function Header() {
           </div>
           <div className="flex-grow items-end flex pb-4 text-white tracking-wide text-sm sm:text-lg">
             <div className="mr-5 text-lg">
-              <a href="">Facebook</a>
-            </div>
-            <div className="mr-5 text-lg">
               <a href="">Instagram</a>
             </div>
             <div className="mr-5 text-lg">
-              <a href="">X</a>
+              <a href="">TikTok</a>
             </div>
           </div>
         </div>

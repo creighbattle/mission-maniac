@@ -1,40 +1,42 @@
 "use client";
 import { useEffect, useState } from "react";
-import { fetchAuthSession } from "aws-amplify/auth";
 import Dropdown from "@/app/global-components/Dropdown";
 import useUserStore from "@/app/stores/userStore";
 import getMyRecruits from "@/app/api-calls/get-my-recruits";
-import useCursorStore from "@/app/stores/cursorStore";
 import MissionModal from "./MissionModal";
 import { formatDistanceToNow, parseISO } from "date-fns";
+import Username from "@/app/global-components/Username";
+import { ClipLoader } from "react-spinners";
+import Notification from "@/app/global-components/Notification";
 
 export default function Recruits({ tab }) {
-  const { setMission } = useUserStore();
+  const { setMission, user } = useUserStore();
   const [open, setOpen] = useState(false);
   const [view, setView] = useState(0);
   const [missionStatusOption, setMissionStatusOption] =
     useState("Active Recruits");
-  const [missionStatusOptions, setMissionStatusOptions] = useState([
+
+  const missionStatusOptions = [
     "Active Recruits",
     "Pending Recruits",
     "Completed Recruits",
     "Declined Recruits",
     "Aborted Recruits",
-  ]);
+    "Expired Recruits",
+  ];
+  const sortOptions = ["Oldest", "Newest"];
   const [sortOption, setSortOption] = useState("Oldest");
-  const [sortOptions, setSortOptions] = useState([
-    "Oldest",
-    "Newest",
-    "Funding",
-  ]);
 
   const [error, setError] = useState("");
 
   const [recruits, setRecruits] = useState([]);
   const [cursorId, setCursorId] = useState(null);
   const [cursorSortId, setCursorSortId] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [loadMore, setLoadMore] = useState(false);
 
   useEffect(() => {
+    setRecruits([]);
     getMyRecruits({
       firstCall: true,
       missionStatusOption,
@@ -46,10 +48,13 @@ export default function Recruits({ tab }) {
       recruits,
       setRecruits,
       setError,
+      setLoading,
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sortOption, missionStatusOption]);
 
   const handleButtonClick = async () => {
+    //setLoadMore(true);
     await getMyRecruits({
       firstCall: false,
       missionStatusOption,
@@ -62,6 +67,8 @@ export default function Recruits({ tab }) {
       setRecruits,
       setError,
     });
+
+    //setLoadMore(false);
   };
 
   const Recruit = ({ index, el }) => {
@@ -72,7 +79,7 @@ export default function Recruits({ tab }) {
         }`}
         onClick={() => {
           setOpen(true);
-          console.log(el);
+
           if (el.mission_status === "active") {
             setView(0);
           } else if (
@@ -90,7 +97,18 @@ export default function Recruits({ tab }) {
       >
         <div className="flex items-center justify-between">
           <p>Mission Maniac: </p>
-          <p>@{el.maniac}</p>
+          {el?.maniac ? (
+            <Username
+              username={el.maniac}
+              textColor={"#bbf7d0"}
+              outlineColor={"white"}
+              completedMissions={el.completed_missions}
+              recruits={el.completed_recruits}
+              supports={el.completed_supports}
+            />
+          ) : (
+            <p className="text-[#bbf7d0]">Account Deleted</p>
+          )}
         </div>
         <div className="flex items-center justify-between mt-2">
           <p>Recruited: </p>
@@ -117,6 +135,7 @@ export default function Recruits({ tab }) {
         setView={setView}
         missionStatusOption={missionStatusOption}
       />
+      <Notification />
       <div className="flex items-center justify-between mt-4">
         <Dropdown
           option={missionStatusOption}
@@ -134,7 +153,27 @@ export default function Recruits({ tab }) {
         </label>
       </div>
 
-      {!recruits.length && (
+      {loading && (
+        <div className="w-full flex items-center justify-center mt-10">
+          <ClipLoader
+            color="#4ade80"
+            loading={loading}
+            size={100}
+            aria-label="Loading Spinner"
+            data-testid="loader"
+          />
+        </div>
+      )}
+
+      {recruits.length > 0 && !loading && (
+        <div className="flex items-center justify-center mt-6">
+          <p className="text-green-400">
+            {recruits[0].total_recruits} {missionStatusOption.toLowerCase()}.
+          </p>
+        </div>
+      )}
+
+      {!recruits.length && !loading && (
         <div className="flex items-center justify-center mt-20">
           <p className="text-green-400">
             You currently do not have any {missionStatusOption.toLowerCase()}.
@@ -147,7 +186,24 @@ export default function Recruits({ tab }) {
           <Recruit el={el} index={index} key={index} />
         ))}
       </div>
-      {cursorId && <button onClick={handleButtonClick}>Load More fam</button>}
+      {cursorId && (
+        <button
+          className="relative inline-flex items-center text-black mt-4 rounded-md bg-white  px-3 py-3  font-semibold shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600"
+          onClick={handleButtonClick}
+        >
+          {!loadMore ? (
+            "Load More"
+          ) : (
+            <ClipLoader
+              color={"black"}
+              loading={loadMore}
+              size={25}
+              aria-label="Loading Spinner"
+              data-testid="loader"
+            />
+          )}
+        </button>
+      )}
     </>
   );
 }

@@ -1,12 +1,18 @@
+"use client";
+import { useState } from "react";
 import Header from "../global-components/Header";
 import {
   ArrowLongDownIcon,
   ArrowRightCircleIcon,
 } from "@heroicons/react/24/outline";
+import { useRouter } from "next/navigation";
 
 export default function Hero() {
+  const router = useRouter();
+  const [user, setUser] = useState("");
+
   return (
-    <div className="h-svh bg-white">
+    <div className="bg-white">
       <Header />
       <div className="text-black h-svh bg-white flex flex-col items-center justify-center">
         <div className="flex flex-col">
@@ -31,6 +37,8 @@ export default function Hero() {
                     @
                   </span>
                   <input
+                    value={user}
+                    onChange={(e) => setUser(e.target.value)}
                     type="text"
                     name="company-website"
                     id="company-website"
@@ -38,7 +46,10 @@ export default function Hero() {
                     className="block flex-1 border-0 bg-transparent py-1.5 md:py-3 pl-1 md:pl-2 text-gray-900 placeholder:text-gray-400 focus:ring-0 md:text-lg md:leading-6 outline-none caret-green-400"
                     placeholder="Search for a creator"
                   />
-                  <span className="flex select-none items-center mr-4 text-gray-500 md:text-sm">
+                  <span
+                    onClick={() => router.push(`/${user}`)}
+                    className="flex select-none items-center mr-4 text-gray-500 md:text-sm"
+                  >
                     <ArrowRightCircleIcon
                       className="h-5 w-5 text-black md:h-7 md:w-7"
                       aria-hidden="true"
@@ -52,12 +63,13 @@ export default function Hero() {
 
         <div className="absolute bottom-5 flex w-full px-4 justify-between items-center max-w-7xl">
           <p className="text-lg font-medium">
-            Will you be the next Mission Maniac?
+            {/* Will you be the next Mission Maniac? */}
+            What is Mission Maniac?
           </p>
-          {/* <ArrowLongDownIcon
+          <ArrowLongDownIcon
             className="h-9 w-9 md:h-12 md:w-12 text-black"
             aria-hidden="true"
-          /> */}
+          />
         </div>
       </div>
     </div>

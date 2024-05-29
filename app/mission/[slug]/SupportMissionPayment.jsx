@@ -1,11 +1,9 @@
 import { Dialog } from "@headlessui/react";
-import { memo, useState } from "react";
+import { useState } from "react";
 import {
   PaymentElement,
-  Elements,
   useStripe,
   useElements,
-  CardElement,
 } from "@stripe/react-stripe-js";
 import { fetchAuthSession } from "aws-amplify/auth";
 import useUserStore from "@/app/stores/userStore";
@@ -18,8 +16,10 @@ export default function SupportMissionPayment({
   comment,
   isCommentPublic,
   setOpen,
+  supporters,
+  setSupporters,
 }) {
-  const { user, mission } = useUserStore();
+  const { user, mission, setMission } = useUserStore();
   const stripe = useStripe();
   const elements = useElements();
   const [errorMessage, setErrorMessage] = useState("");
@@ -32,17 +32,14 @@ export default function SupportMissionPayment({
 
     setLoading(true);
 
-    console.log(mission);
-
     setErrorMessage("");
 
     let jwt;
 
     try {
       const authSession = await fetchAuthSession();
-      jwt = authSession.tokens.accessToken.toString();
+      jwt = authSession.tokens.idToken.toString();
     } catch (error) {
-      console.log(error);
       return new Error("Error fetching auth session");
     }
 
@@ -52,8 +49,6 @@ export default function SupportMissionPayment({
 
     const { error: submitError } = await elements.submit();
     if (submitError) {
-      console.log("submit error");
-      console.log(submitError);
       setErrorMessage(submitError.message);
       return;
     }
@@ -68,18 +63,18 @@ export default function SupportMissionPayment({
       });
 
     if (paymentMethodError) {
-      console.log(paymentMethodError);
       setErrorMessage(paymentMethodError.message);
       return;
     }
 
     // Fetch to create and confirm the PaymentIntent from your server
-    const res = await fetch("http://10.0.0.222:3005/api/support-mission", {
-      method: "POST",
+    const res = await fetch(process.env.NEXT_PUBLIC_WRITE_SUPPORT_MISSION, {
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${jwt}`,
       },
+      method: "POST",
+      mode: "cors",
       body: JSON.stringify({
         fundAmount: funds,
         paymentMethodId: paymentMethod.id,
@@ -93,7 +88,6 @@ export default function SupportMissionPayment({
 
     if (!res.ok) {
       setErrorMessage(result.message);
-      console.log(result.message);
     } else {
       // notification
 
@@ -102,6 +96,33 @@ export default function SupportMissionPayment({
       setNTitle("Supported");
       setNMessage(`You successfully supported @${user.username}'s mission.`);
       setShowNotification(true);
+      const {
+        username,
+        completed_missions,
+        supported_missions,
+        recruits,
+        supportId,
+        createdAt,
+      } = result;
+
+      const support = {
+        username,
+        completed_missions,
+        supported_missions,
+        recruits,
+        support_id: supportId,
+        created_at: createdAt,
+        supporter_message: comment,
+        funded: funds,
+      };
+
+      const tmp = [...supporters];
+      tmp.unshift(support);
+      setSupporters(tmp);
+
+      const mis = { ...mission };
+      mis.funds = parseInt(funds) + parseInt(mission.funds);
+      setMission(mis);
     }
 
     setLoading(false);
@@ -128,14 +149,14 @@ export default function SupportMissionPayment({
         </div>
 
         <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-100 text-3xl font-bold">
-          M
+          S
         </div>
         <div className="mt-3 text-center sm:mt-5">
           <Dialog.Title
             as="h3"
             className="text-base font-semibold leading-6 text-white"
           >
-            Create Mission
+            Support Mission
           </Dialog.Title>
         </div>
       </div>
@@ -143,9 +164,7 @@ export default function SupportMissionPayment({
       <form onSubmit={handleSubmit}>
         <div className="space-y-0">
           <div className="">
-            <p className="mt-4 text-sm leading-6 text-gray-100 text-center">
-              Recruit @pekinwoof for a mission.
-            </p>
+            <p className="mt-4 text-sm leading-6 text-gray-100 text-center"></p>
             <PaymentElement className="mt-4" />
             {errorMessage && (
               <p className="text-[#FB87A1] mt-4">{errorMessage}</p>
@@ -163,7 +182,6 @@ export default function SupportMissionPayment({
               <ClipLoader
                 color={"black"}
                 loading={loading}
-                // cssOverride={override}
                 size={25}
                 aria-label="Loading Spinner"
                 data-testid="loader"

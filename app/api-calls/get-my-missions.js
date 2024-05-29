@@ -11,16 +11,20 @@ export default async function getMyMissions({
   sortOption,
   missions,
   setMissions,
+  setLoading,
 }) {
+  if (firstCall) {
+    setCursorId(null);
+    setCursorSortId(null);
+    setLoading(true);
+    cursorSortId = null;
+    cursorId = null;
+  }
+
   let data = [];
 
   if (!firstCall) {
     data = [...missions];
-  }
-
-  if (firstCall) {
-    cursorId = null;
-    cursorSortId = null;
   }
 
   let missionStatus = "pending";
@@ -31,7 +35,7 @@ export default async function getMyMissions({
   switch (sortOption) {
     case "Oldest":
       order = "ASC";
-      limit = 3;
+      limit = 2;
       break;
     case "Funding":
       sortBy = "funds";
@@ -63,13 +67,12 @@ export default async function getMyMissions({
 
   try {
     const authSession = await fetchAuthSession();
-    jwt = authSession.tokens.accessToken.toString();
+    jwt = authSession.tokens.idToken.toString();
   } catch (error) {
-    console.log(error);
     return new Error("Error fetching auth session");
   }
 
-  const url = new URL("http://10.0.0.222:3005/api/get-my-missions");
+  const url = new URL(process.env.NEXT_PUBLIC_GET_MY_MISSIONS);
   url.searchParams.append("missionStatus", missionStatus);
   url.searchParams.append("limit", limit);
   url.searchParams.append("sortBy", sortBy);
@@ -117,5 +120,7 @@ export default async function getMyMissions({
     setMissions([...data, ...newData]);
   } catch (error) {
     setError(error.message);
+  } finally {
+    if (firstCall) setLoading(false);
   }
 }

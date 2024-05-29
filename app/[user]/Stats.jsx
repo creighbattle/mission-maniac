@@ -1,15 +1,17 @@
-const stats = [
-  { name: "Completed Missions", stat: "17" },
-  { name: "Mission Likes", stat: "0" },
-  { name: "Recruits", stat: "0" },
-  { name: "Recruit Likes", stat: "0" },
-  { name: "Supports", stat: "0" },
-];
+import useUserStore from "../stores/userStore";
 
 export default function Stats() {
+  const { user } = useUserStore();
+
+  const stats = [
+    { name: "Completed Missions", stat: user.completed_missions },
+    { name: "Mission Likes", stat: user.mission_likes },
+    { name: "Recruits", stat: user.recruits },
+    { name: "Supports", stat: user.supported_missions },
+  ];
   return (
     <div className="">
-      <dl className="mt-5 grid grid-cols-2 gap-5 sm:grid-cols-3 mb-5">
+      <dl className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 md:mt-20 mb-5">
         {stats.map((item) => (
           <div
             key={item.name}

@@ -2,50 +2,56 @@
 import useUserStore from "@/app/stores/userStore";
 import { useEffect, useState } from "react";
 import { ClipLoader } from "react-spinners";
-import Typewriter from "typewriter-effect";
-import { PhotoIcon, UserCircleIcon } from "@heroicons/react/24/solid";
 import useNotificationStore from "@/app/stores/notificationStore";
 import Notification from "@/app/global-components/Notification";
+import saveManiacInfo from "@/app/api-calls/save-maniac-info";
+import { fetchAuthSession } from "aws-amplify/auth";
 
 export default function ManiacNewbie() {
-  const [el, setEl] = useState(0);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const { user, setUser } = useUserStore();
   const [minFund, setMinFund] = useState("");
+  const [error, setError] = useState("");
 
   const { setShowNotification, setNMessage, setNTitle, setNError } =
     useNotificationStore();
 
   useEffect(() => {
-    if (!minFund) {
-      setMinFund(user.min_fund);
-    }
+    setMinFund(minFund || user.min_fund);
   }, [user]);
 
-  const handleClick = async () => {
+  const handleClick = async ({ type }) => {
+    setError("");
     setLoading(true);
     const data = {
       userId: user.user_id,
       stripeId: user.stripe_id,
       infoRequired: user.info_required,
+      type,
     };
 
     try {
-      const response = await fetch(
-        "http://10.0.0.222:3005/api/create-stripe-link",
-        {
-          method: "POST",
-          mode: "cors",
-          cache: "no-cache",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(data),
-        }
-      );
+      const authSession = await fetchAuthSession();
+      const jwt = authSession.tokens.idToken.toString();
+      const response = await fetch(process.env.NEXT_PUBLIC_WRITE_STRIPE_LINK, {
+        method: "POST",
+        mode: "cors",
+        cache: "no-cache",
+        headers: {
+          Authorization: `Bearer ${jwt}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
 
-      const { link, account, loginLink } = await response.json();
+      if (!response.ok) {
+        throw new Error(
+          "Failed to create your Stripe account. Please try again in a moment."
+        );
+      }
+
+      const { link, account } = await response.json();
 
       if (!user.stripe_id && account) {
         const clone = { ...user };
@@ -53,69 +59,42 @@ export default function ManiacNewbie() {
         setUser(clone);
       }
 
-      console.log(loginLink.url);
-      console.log(link);
+      if (link) {
+        window.open(link, "_blank");
+      }
 
       setLoading(false);
     } catch (error) {
-      console.log(error);
+      setError("Failed to create the link. Please try again in a moment.");
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleSave = async () => {
-    setNError(false);
-    setSaving(true);
     const el = document.getElementById("accepting-missions");
     const acceptingMissions = el.checked;
 
-    try {
-      const response = await fetch(
-        "http://10.0.0.222:3005/api/save-maniac-info",
-        {
-          method: "POST",
-          mode: "cors",
-          cache: "no-cache",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            acceptingMissions,
-            minFund,
-            userId: user.user_id,
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        const { message } = await response.json();
-        throw new Error(message);
-      }
-
-      setNTitle("Successfully saved!");
-      setNMessage("Your mission request requirements have been updated.");
-      setSaving(false);
-      //console.log(message);
-    } catch (error) {
-      setSaving(false);
-      console.log("here");
-      setNError(true);
-      setNTitle("Uh oh!");
-      setNMessage(error.message);
-    } finally {
-      setShowNotification(true);
-    }
+    await saveManiacInfo({
+      minFund,
+      acceptingMissions,
+      setShowNotification,
+      setNTitle,
+      setNMessage,
+      setNError,
+      setSaving,
+    });
   };
 
   if (loading) {
     return (
       <div>
         <div className="mt-5 flex flex-col items-center justify-center">
-          Creating your Stripe account
+          Generating Stripe Link
           <div className="mt-2">
             <ClipLoader
               color={"#4ade80"}
               loading={loading}
-              // cssOverride={override}
               size={25}
               aria-label="Loading Spinner"
               data-testid="loader"
@@ -137,13 +116,6 @@ export default function ManiacNewbie() {
             className="flex justify-center text-black rounded-md bg-green-400 px-6 py-2 text-sm font-semibold leading-6  shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600"
           >
             View Dashboard
-          </button>
-          <button
-            type="button"
-            onClick={handleClick}
-            className="flex justify-center ml-2 text-black rounded-md bg-green-400 px-6 py-2 text-sm font-semibold leading-6  shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600"
-          >
-            Update Account
           </button>
         </div>
 
@@ -174,7 +146,12 @@ export default function ManiacNewbie() {
               $
             </span>
             <input
-              onChange={(e) => setMinFund(e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value;
+                if (/^\d*$/.test(value)) {
+                  setMinFund(value);
+                }
+              }}
               value={minFund}
               type="text"
               inputMode="decimal"
@@ -199,7 +176,6 @@ export default function ManiacNewbie() {
                 <ClipLoader
                   color={"black"}
                   loading={saving}
-                  // cssOverride={override}
                   size={25}
                   aria-label="Loading Spinner"
                   data-testid="loader"
@@ -236,166 +212,25 @@ export default function ManiacNewbie() {
       <p className="mt-5">
         So you want to become a Maniac... Mission Maniac, that is! Intriguing
         choice! I cannot wait to see all the missions you complete. But first,
-        let's get you set up with your very first mission.
+        let&apos;s get you set up with your very first mission.
       </p>
       <p className="mt-5 text-green-400">Mission:</p>
       <p className="mt-1 ml-3">
         Complete Stripe Onboarding. We&apos;ve partnered up with Stripe, a
-        trusted global payment platform, to ensure you're rewarded for your
+        trusted global payment platform, to ensure you&apos;re rewarded for your
         daring missions. Once this is completed, you can begin receiving
         missions from recruiters all around the globe.
       </p>
+      {error && <p className="text-[#FB87A1] text-center mt-2">{error}</p>}
       <div className="mt-5 w-full flex items-center justify-center">
         <button
           type="button"
           onClick={handleClick}
           className="flex justify-center text-black rounded-md bg-green-400 px-6 py-2 text-sm font-semibold leading-6  shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600"
         >
-          Let's Go
+          Let&apos;s Go
         </button>
       </div>
     </div>
   );
-
-  // if (showLast) {
-  //   return (
-  //     <div>
-  //       <div className="mt-5 flex flex-col items-center justify-center">
-  //         <Typewriter
-  //           onInit={(typewriter) => {
-  //             setWriter(typewriter);
-  //             typewriter
-  //               .changeDelay(30)
-  //               .typeString("Your account was successfully created.")
-  //               .callFunction(() => setLoading(true))
-  //               .start();
-  //           }}
-  //         />
-  //       </div>
-  //     </div>
-  //   );
-  // }
-
-  // if (showNext && !showLast) {
-  //   return (
-  //     <div>
-  //       <div className="mt-5 flex flex-col items-center justify-center">
-  //         <Typewriter
-  //           onInit={(typewriter) => {
-  //             setWriter(typewriter);
-  //             typewriter
-  //               .changeDelay(30)
-  //               .typeString("Creating your Stripe account")
-  //               .callFunction(() => setLoading(true))
-  //               .start();
-  //           }}
-  //         />
-
-  //         <div className="mt-2">
-  //           <ClipLoader
-  //             color={"#4ade80"}
-  //             loading={loading}
-  //             // cssOverride={override}
-  //             size={25}
-  //             aria-label="Loading Spinner"
-  //             data-testid="loader"
-  //           />
-  //         </div>
-  //       </div>
-  //     </div>
-  //   );
-  // }
-
-  // if (!showNext || !showLast)
-  //   return (
-  //     <div>
-  //       <div className="mt-5">
-  //         <Typewriter
-  //           onInit={(typewriter) => {
-  //             typewriter
-
-  //               .changeDelay(30)
-  //               .typeString("So you want to become a Maniac...")
-  //               .pauseFor(1000)
-  //               .deleteChars(9)
-  //               .typeString("Mission Maniac, that is!")
-  //               .pauseFor(1500)
-  //               .typeString(" Intriguing choice!")
-  //               .pauseFor(700)
-  //               .typeString(
-  //                 " I cannot wait to see all the missions you complete."
-  //               )
-  //               .pauseFor(700)
-  //               .typeString(
-  //                 " But first, let's get you set up with your very first mission."
-  //               )
-  //               .callFunction(() => {
-  //                 typewriter.stop();
-  //                 document.querySelector(".Typewriter__cursor").style.display =
-  //                   "none";
-
-  //                 setEl(1);
-  //               })
-  //               .start();
-  //           }}
-  //         />
-  //       </div>
-
-  //       {el >= 1 && (
-  //         <div className="mt-5 text-green-400">
-  //           <Typewriter
-  //             onInit={(typewriter) => {
-  //               typewriter
-  //                 .pauseFor(500)
-  //                 .changeDelay(30)
-  //                 .typeString("Mission: ")
-  //                 .callFunction(() => {
-  //                   typewriter.stop();
-  //                   document.querySelectorAll(
-  //                     ".Typewriter__cursor"
-  //                   )[1].style.display = "none";
-  //                   setEl(2);
-  //                 })
-  //                 .start();
-  //             }}
-  //           />
-  //         </div>
-  //       )}
-
-  //       {el >= 2 && (
-  //         <div className="mt-1 ml-3 text-white">
-  //           <Typewriter
-  //             onInit={(typewriter) => {
-  //               typewriter
-  //                 .pauseFor(500)
-  //                 .changeDelay(30)
-  //                 .typeString(
-  //                   "Complete Stripe Onboarding. We’ve teamed up with Stripe, a trusted global payment platform, to ensure you're rewarded for your daring missions. Once this is completed, you can begin receiving missions from recruiters all around the globe."
-  //                 )
-  //                 .callFunction(() => {
-  //                   setShowButton(true);
-  //                   typewriter.stop();
-  //                   document.querySelectorAll(
-  //                     ".Typewriter__cursor"
-  //                   )[2].style.display = "none";
-  //                 })
-  //                 .start();
-  //             }}
-  //           />
-  //         </div>
-  //       )}
-
-  //       {showButton && (
-  //         <div className="mt-5 w-full flex items-center justify-center">
-  //           <button
-  //             type="button"
-  //             onClick={handleClick}
-  //             className="flex justify-center text-black rounded-md bg-green-400 px-6 py-2 text-sm font-semibold leading-6  shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600"
-  //           >
-  //             Let's Go
-  //           </button>
-  //         </div>
-  //       )}
-  //     </div>
-  //   );
 }

@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import toggleLike from "../api-calls/toggle-like";
 import Username from "../global-components/Username";
 import { formatDistanceToNow, parseISO } from "date-fns";
+import useUserStore from "../stores/userStore";
+import useInfoStore from "../stores/infoStore";
 
 function throttle(func, limit) {
   let inThrottle;
@@ -21,6 +23,8 @@ const throttledToggleLike = throttle(toggleLike, 2000);
 
 export default function Mission({ el, index, missionStatusOption }) {
   const router = useRouter();
+  const { setSignInOpen } = useUserStore();
+  const { setShowInfo, setTitle, setInfoMessage } = useInfoStore();
 
   const [mission, setMission] = useState(el);
 
@@ -32,18 +36,11 @@ export default function Mission({ el, index, missionStatusOption }) {
   }, [el]);
 
   const calculateFundingPercentage = () => {
-    console.log("im here");
     if (mission?.funding_goal !== null) {
-      console.log("mission funds: " + mission.funds);
-      console.log("mission funding goal: " + mission.funding_goal);
       let fundsPercentage = Math.min(
         100,
         Math.round((mission.funds / mission.funding_goal) * 100)
       );
-      let goalPercentage = Math.max(0, 100 - fundsPercentage);
-
-      console.log(fundsPercentage, goalPercentage);
-
       setFundingGoalPercentage(fundsPercentage);
     }
   };
@@ -65,46 +62,64 @@ export default function Mission({ el, index, missionStatusOption }) {
 
   return (
     <li
-      className={`flex-col py-5 bg-[#141414] px-2  rounded-lg border-t-2 border-b border-white ${
+      className={`flex-col py-5 bg-[#141414] px-2  rounded-lg border-t-2 border-b border-white hover:cursor-pointer hover:bg-gray-900 ${
         index !== 0 ? "mt-4" : "mt-8"
       }`}
       onClick={() => {
-        console.log("single");
         handleMissionClick();
       }}
-      onDoubleClick={() => {
-        console.log(mission);
-      }}
+      onDoubleClick={() => {}}
     >
-      {/* <img
-        className="h-12 w-12 flex-none rounded-full bg-gray-50"
-        src={comment.imageUrl}
-        alt=""
-      /> */}
       <div className="flex-auto">
         <div className="flex items-baseline justify-between gap-x-4">
-          {/* <p className="text-sm font-semibold leading-6 text-white">
-            @{mission.recruiter}
-          </p> */}
-          <Username
-            username={mission.recruiter}
-            textColor={"#bbf7d0"}
-            outlineColor={"white"}
-            completedMissions={mission.completed_missions}
-            recruits={mission.completed_recruits}
-            supports={mission.completed_supports}
-          />
-          <p className="flex-none text-xs text-green-400">
-            <time dateTime={mission?.created_at}>
-              {formatDistanceToNow(parseISO(mission?.created_at), {
-                addSuffix: true,
-              })}
-            </time>
-          </p>
+          {mission?.recruiter ? (
+            <Username
+              username={mission.recruiter}
+              textColor={"#bbf7d0"}
+              outlineColor={"white"}
+              completedMissions={mission.completed_missions}
+              recruits={mission.completed_recruits}
+              supports={mission.completed_supports}
+            />
+          ) : (
+            <p className="text-[#bbf7d0]">Recruiter Account Deleted</p>
+          )}
+          <div>
+            <p className="flex-none text-xs text-green-400">
+              <time dateTime={mission?.created_at}>
+                {formatDistanceToNow(parseISO(mission?.created_at), {
+                  addSuffix: true,
+                })}
+              </time>
+            </p>
+          </div>
         </div>
-        <p className="mt-1 text-sm leading-6 text-white line-clamp-3 tracking-wide">
-          {mission.mission}
-        </p>
+        <div className="flex justify-between">
+          <p className="mt-1 text-sm leading-6 text-white line-clamp-3 tracking-wide">
+            {mission.mission}
+          </p>
+
+          {mission?.expires_at && (
+            <div
+              className="flex items-center justify-center gap-2 mt-1"
+              onClick={(e) => {
+                e.stopPropagation();
+                setTitle("Expiration Time");
+                setInfoMessage(
+                  "This is the amount of time they have left to complete the mission before it expires."
+                );
+                setShowInfo(true);
+              }}
+            >
+              <img src="/bomb.png" alt="bomb" className="h-4 w-4" />
+              <p className="text-white text-sm">
+                {formatDistanceToNow(parseISO(mission.expires_at), {
+                  addSuffix: true,
+                })}
+              </p>
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="flex items-center justify-between mt-2 text-sm">
@@ -112,13 +127,12 @@ export default function Mission({ el, index, missionStatusOption }) {
           className="flex items-center"
           onClick={async (e) => {
             e.stopPropagation();
-            //await toggleLike({ type: "mission", itemId: mission.mission_id });
-            //console.log(mission);
             await throttledToggleLike({
               type: "mission",
               itemId: mission.mission_id,
               item: mission,
               setItem: setMission,
+              setOpen: setSignInOpen,
             });
           }}
         >

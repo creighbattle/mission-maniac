@@ -11,30 +11,16 @@ import {
 import toggleVote from "@/app/api-calls/toggle-vote";
 import { useEffect, useState } from "react";
 import Username from "@/app/global-components/Username";
+import useNotificationStore from "@/app/stores/notificationStore";
+import Notification from "@/app/global-components/Notification";
+import { formatDistanceToNow, parseISO } from "date-fns";
 
-// const mission = {
-//   createdBy: "@creighbattle",
-//   imageUrl:
-//     "https://images.unsplash.com/photo-1519244703995-f4e0f30006d5?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-//   mission:
-//     "Play kayn jg in high elo. Play kayn jg in high elo. Play kayn jg in high elo. Play kayn jg in high elo. Play kayn jg in high elo. Play kayn jg in high elo. Play kayn jg in high elo.",
-//   message: "Hey Pekin, love your content!",
-//   total: 8,
-//   totalNeeded: 20,
-//   missionLikes: 104,
-//   expireAt: "10:00 am |June 6th | 2024",
-//   status: "active",
-//   funding: 38,
-//   fundingRequirement: 50,
-//   missionFiles: ["https://www.youtube.com/"],
-//   assignedTo: "pekinwoof",
-//   afterReport: "Thanks guys that was fun!",
-// };
-
-export default function MissionReport({ recruiter }) {
+export default function MissionReport({ recruiter, isUser, setSignInOpen }) {
   const { mission, setMission } = useUserStore();
 
   const [isExpired, setIsExpired] = useState(false);
+  const { setNError, setNTitle, setNMessage, setShowNotification } =
+    useNotificationStore();
 
   useEffect(() => {
     const now = new Date();
@@ -46,11 +32,10 @@ export default function MissionReport({ recruiter }) {
 
   if (!mission) {
     return (
-      <div className="flex w-full h-full items-center justify-center">
+      <div className="flex flex-col w-full h-full items-center justify-center mt-10">
         <ClipLoader
           color={"#4ade80"}
           loading={true}
-          // cssOverride={override}
           size={100}
           aria-label="Loading Spinner"
           data-testid="loader"
@@ -60,28 +45,41 @@ export default function MissionReport({ recruiter }) {
   }
 
   const handleVote = async (vote) => {
-    await toggleVote({
-      mission_id: mission.mission_id,
-      vote,
-      mission,
-      setMission,
-    });
+    if (isUser) {
+      await toggleVote({
+        mission_id: mission.mission_id,
+        vote,
+        mission,
+        setMission,
+        setNError,
+        setNTitle,
+        setNMessage,
+        setShowNotification,
+      });
+    } else {
+      setSignInOpen(true);
+    }
   };
 
   if (mission.mission_status === "completed") {
     return (
       <div className="px-4 text-white text-md mt-4">
+        <Notification />
         <p className=" text-green-400">Recruiter:</p>
         {/* <p className="pl-3">@{mission.recruiter}</p> */}
         <div className="pl-3">
-          <Username
-            username={mission.recruiter}
-            textColor={"#bbf7d0"}
-            outlineColor={"white"}
-            completedMissions={recruiter?.completed_missions}
-            recruits={recruiter?.recruits}
-            supports={recruiter?.supported_missions}
-          />
+          {mission?.recruiter ? (
+            <Username
+              username={mission.recruiter}
+              textColor={"#bbf7d0"}
+              outlineColor={"white"}
+              completedMissions={recruiter?.completed_missions}
+              recruits={recruiter?.recruits}
+              supports={recruiter?.supported_missions}
+            />
+          ) : (
+            <p className="text-[#bbf7d0]">Account Deleted</p>
+          )}
         </div>
         <p className=" mt-2 text-green-400">Mission:</p>
         <p className="pl-3 leading-6">{mission.mission}</p>
@@ -123,16 +121,60 @@ export default function MissionReport({ recruiter }) {
         </div>
 
         <p className=" mt-2 text-green-400">Mission Files:</p>
-        {/* {mission.missionFiles.map((el, idx) => {
-        return (
-          <a className="pl-3" key={idx} href={el}>
-            {el}
-          </a>
-        );
-      })} */}
-        <a className="pl-3" href={"#"}>
+
+        <a
+          className="pl-3 hover:cursor-pointer"
+          onClick={() => {
+            window.open(mission.mission_link_1, "_blank");
+          }}
+          href={"#"}
+        >
           {mission.mission_link_1}
         </a>
+        {mission.mission_link_2 && (
+          <a
+            className="pl-3 hover:cursor-pointer"
+            onClick={() => {
+              window.open(mission.mission_link_2, "_blank");
+            }}
+            href={"#"}
+          >
+            {mission.mission_link_2}
+          </a>
+        )}
+        {mission.mission_link_3 && (
+          <a
+            className="pl-3 hover:cursor-pointer"
+            onClick={() => {
+              window.open(mission.mission_link_3, "_blank");
+            }}
+            href={"#"}
+          >
+            {mission.mission_link_3}
+          </a>
+        )}
+        {mission.mission_link_4 && (
+          <a
+            className="pl-3 hover:cursor-pointer"
+            onClick={() => {
+              window.open(mission.mission_link_4, "_blank");
+            }}
+            href={"#"}
+          >
+            {mission.mission_link_4}
+          </a>
+        )}
+        {mission.mission_link_5 && (
+          <a
+            className="pl-3 hover:cursor-pointer"
+            onClick={() => {
+              window.open(mission.mission_link_5, "_blank");
+            }}
+            href={"#"}
+          >
+            {mission.mission_link_5}
+          </a>
+        )}
         <p className=" mt-2 text-green-400">{mission.maniac} report:</p>
         <p className="pl-3">{mission.maniac_message}</p>
         <p className=" mt-2 text-green-400">Funding:</p>
@@ -148,14 +190,18 @@ export default function MissionReport({ recruiter }) {
       <div className="px-4 text-white text-md mt-4">
         <p className=" text-green-400">Recruiter:</p>
         <div className="pl-3">
-          <Username
-            username={mission.recruiter}
-            textColor={"#bbf7d0"}
-            outlineColor={"white"}
-            completedMissions={recruiter?.completed_missions}
-            recruits={recruiter?.recruits}
-            supports={recruiter?.supported_missions}
-          />
+          {mission?.recruiter ? (
+            <Username
+              username={mission?.recruiter}
+              textColor={"#bbf7d0"}
+              outlineColor={"white"}
+              completedMissions={recruiter?.completed_missions}
+              recruits={recruiter?.recruits}
+              supports={recruiter?.supported_missions}
+            />
+          ) : (
+            <p className="text-[#bbf7d0]">Account Deleted</p>
+          )}
         </div>
 
         <p className=" mt-2 text-green-400">Mission:</p>
@@ -167,6 +213,45 @@ export default function MissionReport({ recruiter }) {
             ? "expired"
             : mission.mission_status}
         </p>
+
+        {mission?.expires_at && (
+          <>
+            <p className="mt-2 text-green-400">Expires:</p>
+            <div
+              className="flex items-center gap-2 pl-3"
+              onClick={(e) => {
+                e.stopPropagation();
+                // setTitle("Expiration Time");
+                // setInfoMessage(
+                //   "This is the amount of time they have left to complete the mission before it expires."
+                // );
+                // setShowInfo(true);
+              }}
+            >
+              <img src="/bomb.png" alt="bomb" className="h-4 w-4" />
+              <p className="text-white text-sm">
+                {formatDistanceToNow(parseISO(mission.expires_at), {
+                  addSuffix: true,
+                })}
+              </p>
+            </div>
+          </>
+        )}
+
+        {mission?.maniac_message && (
+          <div className="mt-2">
+            <p className="text-green-400">
+              {mission.mission_status === "aborted"
+                ? "Abort Reason:"
+                : mission.mission_status === "declined"
+                ? "Decline Reason:"
+                : "Report:"}
+            </p>
+            <div className="ml-2">
+              <p>{mission?.maniac_message}</p>
+            </div>
+          </div>
+        )}
 
         <p className=" mt-2 text-green-400">Funding:</p>
         <p className="pl-3">${mission.funds}</p>

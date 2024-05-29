@@ -13,11 +13,25 @@ import Supports from "./supports/Supports";
 import Spectate from "./spectate/Spectate";
 import Settings from "./settings/Settings";
 import Username from "../global-components/Username";
+import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
+import MoreInfo from "../global-components/MoreInfo";
 
 export default function Account() {
-  useGetUserAccount();
+  const [error, setError] = useState();
+  useGetUserAccount(setError);
   const [tab, setTab] = useState(0);
   const { loading, user } = useUserStore();
+
+  if (error === "Server Error" || error === "Failed to fetch") {
+    return (
+      <div className="flex h-svh flex-col items-center justify-center max-w-7xl px-4">
+        <ExclamationTriangleIcon className="w-10 h-10 text-red-300" />
+        <p className="text-3xl text-white text-center">
+          Uh oh! Our servers are having trouble are the moment.
+        </p>
+      </div>
+    );
+  }
 
   if (!user) {
     return (
@@ -25,7 +39,6 @@ export default function Account() {
         <ClipLoader
           color={"#4ade80"}
           loading={loading}
-          // cssOverride={override}
           size={150}
           aria-label="Loading Spinner"
           data-testid="loader"
@@ -41,12 +54,6 @@ export default function Account() {
         <div className="flex justify-between items-center  w-full max-w-7xl">
           <div className="text-white">yo trev</div>
           <div className="flex flex-col justify-center items-center">
-            {/* <img
-              className="inline-block h-14 w-14 rounded-full"
-              src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-              alt=""
-            /> */}
-            {/* <p className="ml-2">@{user.username}</p> */}
             <Username
               username={user.username}
               textColor={"black"}
@@ -91,9 +98,6 @@ export default function Account() {
           <div className={tab === 6 ? "" : "hidden"}>
             <Settings tab={tab} />
           </div>
-          {/* {tab === 0 && <AccountStats />}
-          {tab === 1 && <ManiacNewbie />}
-          {tab === 2 && <Requests />} */}
         </div>
       </div>
     </>

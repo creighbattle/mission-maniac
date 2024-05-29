@@ -1,9 +1,12 @@
 "use client";
+import Username from "@/app/global-components/Username";
 import useUserStore from "@/app/stores/userStore";
 import { formatDistanceToNow, parseISO } from "date-fns";
+import { useRouter } from "next/navigation";
 
 export default function ActiveMissionInfo({ setView, setOpen }) {
   const { selectedData } = useUserStore();
+  const router = useRouter();
 
   return (
     <div className="py-4 px-2  rounded-t-lg text-md text-white tracking-wide leading-7">
@@ -31,7 +34,18 @@ export default function ActiveMissionInfo({ setView, setOpen }) {
       </div>
       <div className="flex items-center justify-between mt-5">
         <p className="text-green-400">Recruiter: </p>
-        <p>@{selectedData.recruiter}</p>
+        {selectedData?.recruiter ? (
+          <Username
+            username={selectedData.recruiter}
+            textColor={"#bbf7d0"}
+            outlineColor={"white"}
+            completedMissions={selectedData.completed_missions}
+            recruits={selectedData.completed_recruits}
+            supports={selectedData.completed_supports}
+          />
+        ) : (
+          <p className="text-[#bbf7d0]">Account Deleted</p>
+        )}
       </div>
       <div className="flex items-center justify-between mt-2">
         <p className="text-green-400">Recruited: </p>
@@ -45,18 +59,20 @@ export default function ActiveMissionInfo({ setView, setOpen }) {
       </div>
       <div className="mt-2">
         <p className="text-green-400">Mission: </p>
-        <div className="ml-2 line-clamp-3">
+        <div className="ml-2">
           <p>{selectedData?.mission}</p>
         </div>
       </div>
-      <div className="mt-2">
-        <p className="text-green-400">Message: </p>
-        <div className="ml-2 line-clamp-3">
-          <p>{selectedData?.mission_message}</p>
+      {selectedData?.mission_message && (
+        <div className="mt-2">
+          <p className="text-green-400">Recruiter Message: </p>
+          <div className="ml-2">
+            <p>{selectedData?.mission_message}</p>
+          </div>
         </div>
-      </div>
+      )}
 
-      <div className="flex mt-5">
+      <div className="mt-5">
         <button
           type="button"
           className="inline-flex w-full justify-center rounded-md bg-gray-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600"
@@ -64,10 +80,25 @@ export default function ActiveMissionInfo({ setView, setOpen }) {
         >
           Abort
         </button>
+        <button
+          type="button"
+          className="inline-flex w-full mt-2 justify-center rounded-md bg-gray-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600"
+          onClick={() => setView(7)}
+        >
+          Update Message
+        </button>
 
         <button
           type="button"
-          className="inline-flex w-full justify-center ml-5 rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600"
+          className="inline-flex w-full mt-2 justify-center rounded-md bg-gray-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600"
+          onClick={() => router.push(`/mission/${selectedData.mission_id}`)}
+        >
+          View Mission
+        </button>
+
+        <button
+          type="button"
+          className="inline-flex w-full justify-center mt-2 rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600"
           onClick={() => setView(5)}
         >
           Complete

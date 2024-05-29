@@ -34,11 +34,6 @@ export default function Comment({
 
   return (
     <li key={c.comment_id} className="flex-col py-5 border-b border-white">
-      {/* <img
-        className="h-12 w-12 flex-none rounded-full bg-gray-50"
-        src={comment.imageUrl}
-        alt=""
-      /> */}
       <div className="flex-auto">
         <div className="flex items-baseline justify-between gap-x-4">
           <Username
@@ -75,8 +70,6 @@ export default function Comment({
                 item: c,
                 setItem: setC,
               });
-
-              console.log(comment);
             }}
           >
             {c.user_has_liked && (
@@ -134,8 +127,6 @@ export default function Comment({
             </div>
           )}
         </div>
-
-        {/* <p className="text-white">Reply</p> */}
       </div>
 
       {comment.comment_replies > 0 && (

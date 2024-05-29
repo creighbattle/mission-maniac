@@ -1,3 +1,6 @@
+import { useRouter } from "next/navigation";
+import useInfoStore from "../stores/infoStore";
+
 export default function Username({
   username,
   completedMissions,
@@ -6,6 +9,9 @@ export default function Username({
   textColor,
   outlineColor,
 }) {
+  const { setShowInfo, setTitle, setInfoMessage } = useInfoStore();
+  const router = useRouter();
+
   let mBadgeColor;
   let rBadgeColor;
   let sBadgeColor;
@@ -17,17 +23,31 @@ export default function Username({
   if (recruits > 0) rBadgeColor = "pink";
   if (recruits >= 20) rBadgeColor = "#0ea5e9";
   if (recruits >= 100) rBadgeColor = "#fdba74";
-  if (recruits >= 300) rBadgeColor = "#4ade80";
+  if (recruits >= 200) rBadgeColor = "#4ade80";
   if (supports > 0) sBadgeColor = "pink";
   if (supports >= 20) sBadgeColor = "#0ea5e9";
   if (supports >= 100) sBadgeColor = "#fdba74";
-  if (supports >= 300) sBadgeColor = "#4ade80";
+  if (supports >= 150) sBadgeColor = "#4ade80";
 
   return (
-    <div className="flex items-center">
+    <div
+      className="flex items-center hover:cursor-pointer"
+      onClick={() => {
+        router.push(`/${username}`);
+      }}
+    >
       <p style={{ color: textColor }}>@{username}</p>
       {completedMissions > 0 && (
-        <span>
+        <span
+          onClick={(e) => {
+            e.stopPropagation();
+            setShowInfo(true);
+            setTitle("Badges");
+            setInfoMessage(
+              `@${username} has earned ${completedMissions} Mission Maniac badges.`
+            );
+          }}
+        >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             //fill="pink"
@@ -56,7 +76,16 @@ export default function Username({
         </span>
       )}
       {recruits > 0 && (
-        <span>
+        <span
+          onClick={(e) => {
+            e.stopPropagation();
+            setShowInfo(true);
+            setTitle("Badges");
+            setInfoMessage(
+              `@${username} has earned ${recruits} recruiter badges.`
+            );
+          }}
+        >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill={rBadgeColor}
@@ -84,7 +113,16 @@ export default function Username({
         </span>
       )}
       {supports > 0 && (
-        <span>
+        <span
+          onClick={(e) => {
+            e.stopPropagation();
+            setShowInfo(true);
+            setTitle("Badges");
+            setInfoMessage(
+              `@${username} has earned ${supports} supporter badges.`
+            );
+          }}
+        >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill={sBadgeColor}

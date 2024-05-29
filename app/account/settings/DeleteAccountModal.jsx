@@ -1,10 +1,32 @@
 import { Fragment, useRef, useState } from "react";
 import { Dialog, Transition } from "@headlessui/react";
-import { CheckIcon, ExclamationCircleIcon } from "@heroicons/react/24/outline";
+import { ExclamationCircleIcon } from "@heroicons/react/24/outline";
+import { ClipLoader } from "react-spinners";
+import deleteAccount from "@/app/api-calls/delete-account";
+import { useRouter } from "next/navigation";
+import { deleteUser } from "aws-amplify/auth";
 
 export default function DeleteAccountModal({ open, setOpen }) {
   const cancelButtonRef = useRef(null);
   const [error, setError] = useState("");
+  const [deleteText, setDeleteText] = useState("");
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+
+  const handleAccountDeletion = async () => {
+    setError("");
+    if (deleteText !== "delete") {
+      setError(`Type 'delete' to confirm`);
+      return;
+    } else {
+      const response = await deleteAccount({ setLoading, setError });
+
+      if (response) {
+        await deleteUser();
+        router.push("/signin");
+      }
+    }
+  };
 
   return (
     <Transition.Root show={open} as={Fragment}>
@@ -36,7 +58,7 @@ export default function DeleteAccountModal({ open, setOpen }) {
               leaveFrom="opacity-100 translate-y-0 sm:scale-100"
               leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
             >
-              <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6">
+              <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-[#141414] px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6">
                 <div>
                   <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
                     <ExclamationCircleIcon
@@ -47,12 +69,12 @@ export default function DeleteAccountModal({ open, setOpen }) {
                   <div className="mt-3 text-center sm:mt-5">
                     <Dialog.Title
                       as="h3"
-                      className="text-base font-semibold leading-6 text-gray-900"
+                      className="text-base font-semibold leading-6 text-white"
                     >
                       Delete Account
                     </Dialog.Title>
                     <div className="mt-2">
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-gray-100">
                         Deleting your account will remove your username from all
                         missions and delete any comments you have. It will not
                         delete your Stripe account if you have one. Are you sure
@@ -64,9 +86,9 @@ export default function DeleteAccountModal({ open, setOpen }) {
                   <div>
                     <label
                       htmlFor="email"
-                      className="block text-sm font-medium leading-6 text-gray-900 mt-4"
+                      className="block text-sm font-medium leading-6 text-white mt-4"
                     >
-                      Type "delete" to confirm
+                      Type &quot;delete&quot; to confirm
                     </label>
                     <div className="relative mt-2 rounded-md shadow-sm">
                       <input
@@ -76,8 +98,9 @@ export default function DeleteAccountModal({ open, setOpen }) {
                         className={`block w-full rounded-md border-0 py-1.5 px-2 pr-10 ring-1 ring-inset  focus:ring-2 focus:ring-inset sm:text-sm sm:leading-6 outline-none ${
                           error ? "text-red-900" : "black"
                         } ${error ? "ring-red-300" : "ring-gray-300"}`}
-                        placeholder="you@example.com"
-                        defaultValue="adamwathan"
+                        placeholder="delete"
+                        value={deleteText}
+                        onChange={(e) => setDeleteText(e.target.value)}
                         aria-invalid="true"
                         aria-describedby="email-error"
                       />
@@ -101,9 +124,19 @@ export default function DeleteAccountModal({ open, setOpen }) {
                   <button
                     type="button"
                     className="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 sm:col-start-2 outline-none"
-                    onClick={() => setOpen(false)}
+                    onClick={handleAccountDeletion}
                   >
-                    Delete
+                    {!loading ? (
+                      "Delete"
+                    ) : (
+                      <ClipLoader
+                        color={"white"}
+                        loading={loading}
+                        size={25}
+                        aria-label="Loading Spinner"
+                        data-testid="loader"
+                      />
+                    )}
                   </button>
                   <button
                     type="button"

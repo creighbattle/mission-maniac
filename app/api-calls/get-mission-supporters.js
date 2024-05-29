@@ -1,5 +1,3 @@
-import { fetchAuthSession } from "aws-amplify/auth";
-
 export default async function getMissionSupporters({
   firstCall,
   cursorId,
@@ -13,41 +11,35 @@ export default async function getMissionSupporters({
   missionId,
 }) {
   let data = [];
-  //   const { data: currentData } = useUserStore();
-  //   const { cursorId, cursorSortId } = useCursorStore();
-
-  console.log("im runing here get user");
 
   if (!firstCall) {
     data = [...supporters];
   }
 
   if (firstCall) {
-    cursorId = null;
+    setCursorId(null);
+    setCursorSortId(null);
     cursorSortId = null;
+    cursorId = null;
   }
-
-  console.log("getting missions supporters");
 
   let sortBy = "created_at";
   let order = "DESC";
-  let limit = 20;
+  let limit = 5;
 
-  console.log(sortOption);
+  // switch (sortOption) {
+  //   case "Oldest":
+  //     order = "ASC";
+  //     limit = 5;
+  //     break;
+  //   case "Funding":
+  //     sortBy = "funds";
+  //     break;
+  //   default:
+  //     break;
+  // }
 
-  switch (sortOption) {
-    case "Oldest":
-      order = "ASC";
-      limit = 20;
-      break;
-    case "Funding":
-      sortBy = "funds";
-      break;
-    default:
-      break;
-  }
-
-  const url = new URL("http://10.0.0.222:3005/api/get-mission-supporters");
+  const url = new URL(process.env.NEXT_PUBLIC_GET_MISSION_SUPPORTERS);
 
   url.searchParams.append("limit", limit);
   url.searchParams.append("sortBy", sortBy);
@@ -66,11 +58,15 @@ export default async function getMissionSupporters({
 
     const { data: newData, nextCursor } = await response.json();
 
-    const decodedString = atob(nextCursor);
-    const cursorObject = JSON.parse(decodedString);
+    let cursorObject = null;
+
+    if (nextCursor) {
+      const decodedString = atob(nextCursor);
+      cursorObject = JSON.parse(decodedString);
+    }
 
     if (cursorObject) {
-      setCursorId(cursorObject.missionId);
+      setCursorId(cursorObject.supportId);
       setCursorSortId(cursorObject.cursorSortId);
     } else {
       setCursorId(null);
@@ -84,9 +80,6 @@ export default async function getMissionSupporters({
     ) {
       newData.shift();
     }
-
-    console.log(newData);
-    console.log(cursorObject);
 
     setSupporters([...data, ...newData]);
   } catch (error) {

@@ -12,13 +12,12 @@ export default async function deleteComment({
 
   try {
     const authSession = await fetchAuthSession();
-    jwt = authSession.tokens.accessToken.toString();
+    jwt = authSession.tokens.idToken.toString();
   } catch (error) {
-    console.log(error);
     return new Error("Error fetching auth session");
   }
 
-  const url = new URL("http://10.0.0.222:3005/api/delete-comment");
+  const url = new URL(process.env.NEXT_PUBLIC_DELETE_COMMENT);
   url.searchParams.append("commentId", commentId);
 
   try {
@@ -32,15 +31,12 @@ export default async function deleteComment({
     });
 
     if (!response.ok) {
-      console.log(response);
       const { message } = await response.json();
       throw new Error(message);
     }
 
     return true;
   } catch (error) {
-    console.log(error);
-    console.log(error.message);
     setError(error.message);
     return false;
   } finally {

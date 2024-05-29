@@ -83,7 +83,6 @@ export default function DeleteCommentModal({
                       <ClipLoader
                         color={"black"}
                         loading={loading}
-                        // cssOverride={override}
                         size={25}
                         aria-label="Loading Spinner"
                         data-testid="loader"

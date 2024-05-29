@@ -10,19 +10,21 @@ export default async function toggleUserSpectate({
   spectating,
   setUser,
   user,
+  setOpen,
 }) {
   setLoading(true);
   let jwt;
 
   try {
     const authSession = await fetchAuthSession();
-    jwt = authSession.tokens.accessToken.toString();
+    jwt = authSession.tokens.idToken.toString();
   } catch (error) {
-    console.log(error);
+    setOpen(true);
+    setLoading(false);
     return new Error("Error fetching auth session");
   }
 
-  const url = new URL("http://10.0.0.222:3005/api/toggle-user-spectate");
+  const url = new URL(process.env.NEXT_PUBLIC_WRITE_TOGGLE_USER_SPECTATE);
 
   try {
     const response = await fetch(url, {
@@ -38,8 +40,6 @@ export default async function toggleUserSpectate({
     });
 
     if (!response.ok) {
-      console.log("im here");
-      console.log(response);
       const { message } = await response.json();
       throw new Error(message);
     }
@@ -64,7 +64,6 @@ export default async function toggleUserSpectate({
 
     return true;
   } catch (error) {
-    console.log(error);
     setError(error.message);
     setNError(true);
     setNTitle("Uh oh");

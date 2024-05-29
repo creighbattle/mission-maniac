@@ -1,4 +1,5 @@
 "use client";
+import Username from "@/app/global-components/Username";
 import useUserStore from "@/app/stores/userStore";
 import { formatDistanceToNow, parseISO } from "date-fns";
 
@@ -33,51 +34,97 @@ export default function MissionSummary({ setView, setOpen }) {
       </div>
       <div className="flex items-center justify-between mt-5">
         <p className="text-green-400">Recruiter: </p>
-        <p>@{selectedData.recruiter}</p>
+        {selectedData?.recruiter ? (
+          <Username
+            username={selectedData.recruiter}
+            textColor={"#bbf7d0"}
+            outlineColor={"white"}
+            completedMissions={selectedData.completed_missions}
+            recruits={selectedData.completed_recruits}
+            supports={selectedData.completed_supports}
+          />
+        ) : (
+          <p className="text-[#bbf7d0]">Account Deleted</p>
+        )}
       </div>
       <div className="flex items-center justify-between mt-2">
-        <p className="text-green-400">Recruited Date: </p>
+        <p className="text-green-400">Recruited: </p>
         {formatDistanceToNow(parseISO(selectedData.created_at), {
           addSuffix: true,
         })}
       </div>
       <div className="flex items-center justify-between mt-2">
         <p className="text-green-400">Funding: </p>
-        <p>{selectedData?.funds}</p>
+        <p>${selectedData?.funds}</p>
       </div>
       {selectedData?.funding_goal && (
         <div className="flex items-center justify-between mt-2">
           <p className="text-green-400">Funding Goal: </p>
-          <p>{selectedData?.funding_goal}</p>
+          <p>${selectedData?.funding_goal}</p>
         </div>
       )}
       <div className="mt-2">
         <p className="text-green-400">Mission: </p>
-        <div className="ml-2 line-clamp-3">
+        <div className="ml-2">
           <p>{selectedData?.mission}</p>
         </div>
       </div>
       {selectedData.mission_message && (
         <div className="mt-2">
           <p className="text-green-400">Recruiter Message: </p>
-          <div className="ml-2 line-clamp-3">
+          <div className="ml-2">
             <p>{selectedData?.mission_message}</p>
           </div>
         </div>
       )}
 
-      <div className="mt-2">
-        <p className="text-green-400">
-          {selectedData.mission_status === "aborted"
-            ? "Abort Reason:"
-            : selectedData.mission_status === "declined"
-            ? "Decline Reason:"
-            : "Message:"}
-        </p>
-        <div className="ml-2 line-clamp-3">
-          <p>{selectedData?.maniac_message}</p>
+      {selectedData?.maniac_message && (
+        <div className="mt-2">
+          <p className="text-green-400">
+            {selectedData.mission_status === "aborted"
+              ? "Abort Reason:"
+              : selectedData.mission_status === "declined"
+              ? "Decline Reason:"
+              : "Your Message:"}
+          </p>
+          <div className="ml-2">
+            <p>{selectedData?.maniac_message}</p>
+          </div>
         </div>
-      </div>
+      )}
+
+      {selectedData.mission_status === "completed" && (
+        <>
+          <div className="mt-2">
+            <p className="text-green-400">Mission Completed: </p>
+            <div className="ml-2">
+              {formatDistanceToNow(
+                parseISO(selectedData?.mission_completed_at),
+                {
+                  addSuffix: true,
+                }
+              )}
+            </div>
+          </div>
+
+          {selectedData?.transfer_amount && (
+            <>
+              <div className="mt-2">
+                <p className="text-green-400">Total Paid: </p>
+                <div className="ml-2">
+                  <p>${(selectedData?.total_transfer / 100).toFixed(2)}</p>
+                </div>
+              </div>
+              <div className="mt-2">
+                <p className="text-green-400">Pending Payout: </p>
+                <div className="ml-2">
+                  <p>${(selectedData?.transfer_amount / 100).toFixed(2)}</p>
+                </div>
+              </div>
+            </>
+          )}
+        </>
+      )}
 
       <div className="flex mt-5">
         {(selectedData.mission_status === "aborted" ||
@@ -86,7 +133,6 @@ export default function MissionSummary({ setView, setOpen }) {
           <button
             type="button"
             className="inline-flex w-full justify-center rounded-md bg-gray-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600"
-            //   onClick={() => setView(1)}
           >
             View Mission
           </button>

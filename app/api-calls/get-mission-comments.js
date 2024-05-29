@@ -1,4 +1,4 @@
-import { fetchAuthSession, fetchUserAttributes } from "aws-amplify/auth";
+import { fetchUserAttributes } from "aws-amplify/auth";
 
 export default async function getMissionComments({
   firstCall,
@@ -11,23 +11,25 @@ export default async function getMissionComments({
   setError,
   sortOption,
   missionId,
+  setLoading,
 }) {
+  if (firstCall) {
+    setLoading(true);
+    setCursorId(null);
+    setCursorSortId(null);
+    cursorSortId = null;
+    cursorId = null;
+  }
+
   let data = [];
 
   if (!firstCall) {
     data = [...comments];
   }
 
-  if (firstCall) {
-    cursorId = null;
-    cursorSortId = null;
-  }
-
   let sortBy = "created_at";
   let order = "DESC";
-  let limit = 10;
-
-  console.log(sortOption);
+  let limit = 2;
 
   switch (sortOption) {
     case "Oldest":
@@ -47,11 +49,10 @@ export default async function getMissionComments({
     const userAttributes = await fetchUserAttributes();
     username = userAttributes.preferred_username;
   } catch (error) {
-    console.log(error);
-    return new Error("Error fetching auth session");
+    //return new Error("Error fetching auth session");
   }
 
-  const url = new URL("http://10.0.0.222:3005/api/get-mission-comments");
+  const url = new URL(process.env.NEXT_PUBLIC_GET_MISSION_COMMENTS);
 
   url.searchParams.append("limit", limit);
   url.searchParams.append("sortBy", sortBy);
@@ -71,11 +72,15 @@ export default async function getMissionComments({
 
     const { data: newData, nextCursor } = await response.json();
 
-    const decodedString = atob(nextCursor);
-    const cursorObject = JSON.parse(decodedString);
+    let cursorObject = null;
+
+    if (nextCursor) {
+      const decodedString = atob(nextCursor);
+      cursorObject = JSON.parse(decodedString);
+    }
 
     if (cursorObject) {
-      setCursorId(cursorObject.missionId);
+      setCursorId(cursorObject.commentId);
       setCursorSortId(cursorObject.cursorSortId);
     } else {
       setCursorId(null);
@@ -90,11 +95,10 @@ export default async function getMissionComments({
       newData.shift();
     }
 
-    console.log(newData);
-    console.log(cursorObject);
-
     setComments([...data, ...newData]);
   } catch (error) {
     setError(error.message);
+  } finally {
+    setLoading(false);
   }
 }

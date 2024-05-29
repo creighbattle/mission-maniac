@@ -11,27 +11,30 @@ export default async function getMyRecruits({
   sortOption,
   recruits,
   setRecruits,
+  setLoading,
 }) {
+  if (firstCall) {
+    setCursorId(null);
+    setCursorSortId(null);
+    setLoading(true);
+    cursorSortId = null;
+    cursorId = null;
+  }
   let data = [];
 
   if (!firstCall) {
     data = [...recruits];
   }
 
-  if (firstCall) {
-    cursorId = null;
-    cursorSortId = null;
-  }
-
   let missionStatus = "pending";
   let sortBy = "created_at";
   let order = "DESC";
-  let limit = 10;
+  let limit = 3;
 
   switch (sortOption) {
     case "Oldest":
       order = "ASC";
-      limit = 10;
+      limit = 3;
       break;
     case "Funding":
       sortBy = "funds";
@@ -55,6 +58,9 @@ export default async function getMyRecruits({
       break;
     case "Aborted Recruits":
       missionStatus = "aborted";
+    case "Expired Recruits":
+      missionStatus = "expired";
+      break;
     default:
       break;
   }
@@ -63,13 +69,12 @@ export default async function getMyRecruits({
 
   try {
     const authSession = await fetchAuthSession();
-    jwt = authSession.tokens.accessToken.toString();
+    jwt = authSession.tokens.idToken.toString();
   } catch (error) {
-    console.log(error);
     return new Error("Error fetching auth session");
   }
 
-  const url = new URL("http://10.0.0.222:3005/api/get-my-recruits");
+  const url = new URL(process.env.NEXT_PUBLIC_GET_MY_RECRUITS);
   url.searchParams.append("missionStatus", missionStatus);
   url.searchParams.append("limit", limit);
   url.searchParams.append("sortBy", sortBy);
@@ -117,5 +122,7 @@ export default async function getMyRecruits({
     setRecruits([...data, ...newData]);
   } catch (error) {
     setError(error.message);
+  } finally {
+    if (firstCall) setLoading(false);
   }
 }
