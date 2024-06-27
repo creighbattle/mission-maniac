@@ -39,11 +39,11 @@ export default function Home() {
   return (
     <>
       <Hero />
-      <What />
+      {/* <What />
       <Recruit />
       <Decision />
       <Support />
-      <Report />
+      <Report /> */}
     </>
   );
 }
