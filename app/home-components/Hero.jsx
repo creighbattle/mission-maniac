@@ -37,7 +37,7 @@ export default function Hero() {
                     e.preventDefault();
                     router.push(`/${user}`);
                   }}
-                  className="flex rounded-md shadow-sm ring-1 ring-inset ring-green-400 focus-within:ring-2 focus-within:ring-inset"
+                  className="flex rounded-md shadow-sm ring-1 ring-inset ring-gray-400 focus-within:ring-2 focus-within:ring-inset"
                 >
                   <span className="flex select-none items-center pl-3 text-gray-500 md:text-xl md:mb-1">
                     @
