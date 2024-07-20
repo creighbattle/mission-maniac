@@ -80,11 +80,6 @@ export default function CreateMissionForm({
   };
 
   const handleSubmit = async (event) => {
-    if (parseInt(amount) > 0) {
-      setView(1);
-      return;
-    }
-
     setLoading(true);
 
     event.preventDefault();
@@ -169,7 +164,7 @@ export default function CreateMissionForm({
         setShowInfo={setShowInfo}
       />
       <div
-        className="absolute text-white top-7 right-4"
+        className="absolute text-white top-7 right-4 hover:cursor-pointer"
         onClick={() => setOpen(false)}
       >
         <svg
@@ -220,7 +215,7 @@ export default function CreateMissionForm({
                   Fund
                 </label>
                 <InformationCircleIcon
-                  className="h-5 w-5 text-green-400"
+                  className="h-5 w-5 text-green-400 hover:cursor-pointer"
                   aria-hidden="true"
                   onClick={() => handleInfo("fund")}
                 />
@@ -258,7 +253,7 @@ export default function CreateMissionForm({
                     Expire
                   </label>
                   <InformationCircleIcon
-                    className="h-5 w-5 text-green-400"
+                    className="h-5 w-5 text-green-400 hover:cursor-pointer"
                     aria-hidden="true"
                     onClick={() => handleInfo("expire")}
                   />
@@ -281,7 +276,7 @@ export default function CreateMissionForm({
                     Mission
                   </label>
                   <InformationCircleIcon
-                    className="h-5 w-5 text-green-400"
+                    className="h-5 w-5 text-green-400 hover:cursor-pointer"
                     aria-hidden="true"
                     onClick={() => handleInfo("mission")}
                   />
@@ -311,7 +306,7 @@ export default function CreateMissionForm({
                     Message
                   </label>
                   <InformationCircleIcon
-                    className="h-5 w-5 text-green-400"
+                    className="h-5 w-5 text-green-400 hover:cursor-pointer"
                     aria-hidden="true"
                     onClick={() => handleInfo("message")}
                   />
@@ -353,8 +348,6 @@ export default function CreateMissionForm({
               aria-label="Loading Spinner"
               data-testid="loader"
             />
-          ) : parseInt(user.min_fund) > 0 || parseInt(amount) > 0 ? (
-            "Continue"
           ) : (
             "Create Mission"
           )}

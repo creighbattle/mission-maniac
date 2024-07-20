@@ -22,6 +22,12 @@ export default function Header() {
     checkForUser();
   }, []);
 
+  useEffect(() => {
+    if (open) {
+      console.log("running");
+    }
+  }, [open]);
+
   const checkForUser = async () => {
     try {
       const userAttributes = await fetchUserAttributes();
@@ -95,12 +101,12 @@ export default function Header() {
       >
         <div className="h-svh flex flex-col px-8 tracking-wide">
           <ul className="text-white pt-32">
-            {/* <li className="text-5xl">
-              <a href="">Discover</a>
+            <li className="text-5xl">
+              <a href="/shop">Shop</a>
             </li>
             <li className="text-5xl mt-8">
-              <a href="">Learn</a>
-            </li> */}
+              <a href="/learn">Learn</a>
+            </li>
 
             {!username && (
               <li className="text-5xl mt-8">
@@ -110,7 +116,7 @@ export default function Header() {
 
             {username && (
               <li className="text-5xl mt-8">
-                <a href="/account">View Account</a>
+                <a href="/account">Account</a>
               </li>
             )}
           </ul>

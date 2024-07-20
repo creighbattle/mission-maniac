@@ -47,11 +47,7 @@ export default function What() {
               challenge your favorite content creators with exciting missions.
               Become a Recruiter by assigning missions. Become a Supporter by
               backing missions. Or sign up to become a Mission Maniac to take on
-              challenges from Recruiters! Want to enjoy the madness from the
-              shadows? Become a spectator. Spectators are the silent watchers
-              who don&apos;t engage much but are still locked in on the Mission.
-              Whatever your vibe is, there is a place for you on Mission Maniac.
-              Let the madness begin.
+              challenges from Recruiters!
             </p>
           </div>
         </div>
