@@ -138,7 +138,7 @@ export default function MissionSupporters({ supporters, setSupporters }) {
                     </div>
                     <time
                       dateTime={supporter.created_at}
-                      className="flex-none py-0.5 text-xs leading-5 text-green-400"
+                      className="flex-none py-0.5 text-xs leading-5 text-gray-300"
                     >
                       {formatDistanceToNow(parseISO(supporter.created_at), {
                         addSuffix: true,
@@ -150,7 +150,7 @@ export default function MissionSupporters({ supporters, setSupporters }) {
                       {supporter.supporter_message}
                     </p>
                     <p className="py-0.5 text-xs leading-5 text-green-400 ml-2">
-                      ${supporter.funded}
+                      {supporter.funded} points
                     </p>
                   </div>
                 </div>
@@ -176,11 +176,13 @@ export default function MissionSupporters({ supporters, setSupporters }) {
                     )}
                   </span>{" "}
                   supported the mission with{" "}
-                  <span className="text-green-400">${supporter.funded}</span>
+                  <span className="text-green-400">
+                    {supporter.funded} points.
+                  </span>
                 </div>
                 <time
                   dateTime={supporter.created_at}
-                  className="flex-none py-0.5 text-xs leading-5 text-green-400"
+                  className="flex-none py-0.5 text-xs leading-5 text-gray-300"
                 >
                   {formatDistanceToNow(parseISO(supporter.created_at), {
                     addSuffix: true,

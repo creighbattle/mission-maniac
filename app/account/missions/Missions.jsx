@@ -193,8 +193,8 @@ export default function Missions() {
           </p>
         </div>
         <div className="flex items-center justify-between mt-2">
-          <p>Funding: </p>
-          <p>${el.funds}</p>
+          <p>Mission Points: </p>
+          <p>{el.funds}</p>
         </div>
         <div className="mt-2 text-green-400">
           <p>Mission: </p>

@@ -1,8 +1,6 @@
 "use client";
-import { Elements } from "@stripe/react-stripe-js";
 import Header from "../global-components/Header";
 import User from "./User";
-import { loadStripe } from "@stripe/stripe-js";
 import { useGetUser } from "../hooks/useGetUser";
 import useUserStore from "../stores/userStore";
 import { ClipLoader } from "react-spinners";
@@ -14,8 +12,6 @@ import { fetchUserAttributes } from "aws-amplify/auth";
 import { useRouter } from "next/navigation";
 import { Amplify } from "aws-amplify";
 import SignInModal from "../global-components/SignInModal";
-
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISH_KEY);
 
 Amplify.configure({
   Auth: {
@@ -48,17 +44,6 @@ export default function UserPage() {
     } catch (error) {}
   };
 
-  const options = {
-    mode: "payment",
-    amount: 1099,
-    currency: "usd",
-    appearance: {
-      theme: "night",
-      labels: "above",
-    },
-    paymentMethodCreation: "manual",
-  };
-
   if (
     error === "Error fetching user" ||
     error === "Failed to fetch" ||
@@ -89,12 +74,12 @@ export default function UserPage() {
   }
 
   return (
-    <Elements stripe={stripePromise} options={options}>
+    <>
       <Notification />
       <Header />
       <User isUser={isUser} />
       <MoreInfo />
       <SignInModal />
-    </Elements>
+    </>
   );
 }

@@ -14,8 +14,6 @@ const MAX_MESSAGE_LENGTH = 500;
 const MAX_MISSION_LENGTH = 500;
 
 export default function CreateMissionForm({
-  setView,
-  setFunds,
   setExpire,
   mission,
   message,
@@ -203,7 +201,7 @@ export default function CreateMissionForm({
               {/* Recruit <span className="text-green-400">@{user.username}</span>{" "}
               for a mission. Minimum funding needed to create a mission is $
               {user.min_fund}. */}
-              Minimum funding needed to create a mission is ${user.min_fund}.
+              Minimum mission points required: {user.min_fund}.
             </p>
 
             <div className="mt-4">
@@ -212,7 +210,7 @@ export default function CreateMissionForm({
                   htmlFor="username"
                   className="block text-sm font-medium leading-6 text-green-400"
                 >
-                  Fund
+                  Add Mission Points
                 </label>
                 <InformationCircleIcon
                   className="h-5 w-5 text-green-400 hover:cursor-pointer"
@@ -223,9 +221,7 @@ export default function CreateMissionForm({
 
               <div className="mt-2 w-full">
                 <div className="flex rounded-md shadow-sm ring-1 ring-inset ring-gray-300 focus-within:ring-2 focus-within:ring-inset focus-within:ring-green-600 sm:max-w-md outline-none  text-white">
-                  <span className="flex select-none items-center pl-3 text-white-500 sm:text-sm">
-                    $
-                  </span>
+                  <span className="flex select-none items-center pl-2 text-white-500 sm:text-sm"></span>
                   <input
                     onChange={(e) => {
                       const value = e.target.value;

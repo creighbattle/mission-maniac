@@ -117,8 +117,8 @@ export default function MissionInfo({ setOpen, missionStatusOption }) {
             })}
           </div>
           <div className="flex items-center justify-between mt-2">
-            <p className="text-green-400">You Funded: </p>
-            <p>${mission?.funds}</p>
+            <p className="text-green-400">Mission Points Added: </p>
+            <p>{mission?.funds}</p>
           </div>
           <div className="mt-2">
             <p className="text-green-400">Mission: </p>

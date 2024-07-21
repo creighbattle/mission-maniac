@@ -4,14 +4,20 @@ import { InformationCircleIcon } from "@heroicons/react/24/outline";
 import useInfoStore from "@/app/stores/infoStore";
 import useUserStore from "@/app/stores/userStore";
 import MoreInfo from "@/app/global-components/MoreInfo";
+import useNotificationStore from "@/app/stores/notificationStore";
+import { ClipLoader } from "react-spinners";
+import { useState } from "react";
+import { fetchAuthSession } from "aws-amplify/auth";
 
 export default function SupportMissionForm({
-  setView,
   setFunds,
   setComment,
-  setIsCommentPublic,
+  comment,
   isCommentPublic,
   funds,
+  setOpen,
+  supporters,
+  setSupporters,
 }) {
   const {
     infoMessage,
@@ -21,23 +27,106 @@ export default function SupportMissionForm({
     setTitle,
     setInfoMessage,
   } = useInfoStore();
-  const { user } = useUserStore();
+  const { user, mission, setMission } = useUserStore();
+  const [errorMessage, setErrorMessage] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { setShowNotification, setNTitle, setNMessage, setNError } =
+    useNotificationStore();
 
   const handleInfo = (t) => {
     switch (t) {
       case "fund":
-        setTitle("Fund");
-        setMessage(
-          "Funding is a way for you to help @pekinwoof complete the mission."
+        setTitle("Support a Mission");
+        setInfoMessage(
+          "Contributing Mission Points helps support and fund the mission, bringing it closer to its goal. Your support makes a significant impact!"
         );
         break;
       case "mission":
         break;
       case "message":
-        break;
+        setTitle("Add a Comment");
+        setInfoMessage(
+          "Feel free to write a message to explain why you supported the mission. Your words can encourage others to join in and support the cause!"
+        );
     }
 
     setShowInfo(true);
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    setLoading(true);
+
+    setErrorMessage("");
+
+    let jwt;
+
+    try {
+      const authSession = await fetchAuthSession();
+      jwt = authSession.tokens.idToken.toString();
+    } catch (error) {
+      return new Error("Error fetching auth session");
+    }
+
+    // Fetch to create and confirm the PaymentIntent from your server
+    const res = await fetch(process.env.NEXT_PUBLIC_WRITE_SUPPORT_MISSION, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${jwt}`,
+      },
+      method: "POST",
+      mode: "cors",
+      body: JSON.stringify({
+        fundAmount: funds,
+        comment,
+        isCommentPublic,
+        missionId: mission.mission_id,
+      }),
+    });
+
+    const result = await res.json();
+
+    if (!res.ok) {
+      setErrorMessage(result.message);
+    } else {
+      // notification
+
+      setOpen(false);
+      setNError(false);
+      setNTitle("Supported");
+      setNMessage(`You successfully supported @${user.username}'s mission.`);
+      setShowNotification(true);
+      const {
+        username,
+        completed_missions,
+        supported_missions,
+        recruits,
+        supportId,
+        createdAt,
+      } = result;
+
+      const support = {
+        username,
+        completed_missions,
+        supported_missions,
+        recruits,
+        support_id: supportId,
+        created_at: createdAt,
+        supporter_message: comment,
+        funded: funds,
+      };
+
+      const tmp = [...supporters];
+      tmp.unshift(support);
+      setSupporters(tmp);
+
+      const mis = { ...mission };
+      mis.funds = parseInt(funds) + parseInt(mission.funds);
+      setMission(mis);
+    }
+
+    setLoading(false);
   };
 
   return (
@@ -73,7 +162,7 @@ export default function SupportMissionForm({
                   htmlFor="username"
                   className="block text-sm font-medium leading-6 text-green-400"
                 >
-                  Fund
+                  Add Mission Points
                 </label>
                 <InformationCircleIcon
                   className="h-5 w-5 text-green-400"
@@ -84,9 +173,7 @@ export default function SupportMissionForm({
 
               <div className="mt-2 w-full">
                 <div className="flex rounded-md shadow-sm ring-1 ring-inset ring-gray-300 focus-within:ring-2 focus-within:ring-inset focus-within:ring-green-600 sm:max-w-md outline-none  text-white">
-                  <span className="flex select-none items-center pl-3 text-white-500 sm:text-sm">
-                    $
-                  </span>
+                  <span className="flex select-none items-center pl-3 text-white-500 sm:text-sm"></span>
                   <input
                     onChange={(e) => {
                       const value = e.target.value;
@@ -151,13 +238,25 @@ export default function SupportMissionForm({
         </div>
       </form>
 
+      {errorMessage && <p className="text-[#FB87A1] mt-4">{errorMessage}</p>}
+
       <div className="mt-5 sm:mt-6">
         <button
           type="button"
           className="inline-flex w-full justify-center rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600"
-          onClick={() => setView(1)}
+          onClick={handleSubmit}
         >
-          Continue
+          {!loading ? (
+            "Support"
+          ) : (
+            <ClipLoader
+              color={"black"}
+              loading={loading}
+              size={25}
+              aria-label="Loading Spinner"
+              data-testid="loader"
+            />
+          )}
         </button>
       </div>
     </>

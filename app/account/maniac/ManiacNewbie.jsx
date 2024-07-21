@@ -140,11 +140,9 @@ export default function ManiacNewbie() {
         </div>
 
         <div className="flex items-center justify-between mt-4 border-white border-b">
-          <h2 className="text-white">Minimum Fund:</h2>
+          <h2 className="text-white">Minimum Mission Points:</h2>
           <div className="flex  rounded-md shadow-sm ring-1 ring-inset ring-gray-300 focus-within:ring-2 focus-within:ring-inset focus-within:ring-green-600 sm:max-w-md outline-none  text-white">
-            <span className="flex select-none items-center pl-3 text-white-500 sm:text-sm">
-              $
-            </span>
+            {/* <span className="flex select-none items-center pl-2 text-white-500 sm:text-sm"></span> */}
             <input
               onChange={(e) => {
                 const value = e.target.value;
@@ -158,7 +156,7 @@ export default function ManiacNewbie() {
               name="username"
               id="username"
               autoComplete="off"
-              className="block flex-1 border-0 bg-transparent py-1.5 pl-1 text-white placeholder:text-gray-400 focus:ring-0 sm:text-sm sm:leading-6 outline-none"
+              className="block flex-1 border-0 bg-transparent py-1.5 pl-1 text-white placeholder:text-gray-400 focus:ring-0 sm:text-sm sm:leading-6 outline-none text-right pr-2 w-32"
             />
           </div>
         </div>

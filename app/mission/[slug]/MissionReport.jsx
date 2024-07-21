@@ -177,10 +177,10 @@ export default function MissionReport({ recruiter, isUser, setSignInOpen }) {
         )}
         <p className=" mt-2 text-green-400">{mission.maniac} report:</p>
         <p className="pl-3">{mission.maniac_message}</p>
-        <p className=" mt-2 text-green-400">Funding:</p>
-        <p className="pl-3">${mission.funds}</p>
+        <p className=" mt-2 text-green-400">Mission Points:</p>
+        <p className="pl-3">{mission.funds}</p>
         <p className=" mt-2 text-green-400">Funding Requirement:</p>
-        <p className="pl-3">${mission.funding_goal}</p>
+        <p className="pl-3">{mission.funding_goal}</p>
       </div>
     );
   }
@@ -253,10 +253,10 @@ export default function MissionReport({ recruiter, isUser, setSignInOpen }) {
           </div>
         )}
 
-        <p className=" mt-2 text-green-400">Funding:</p>
-        <p className="pl-3">${mission.funds}</p>
-        <p className=" mt-2 text-green-400">Funding Requirement:</p>
-        <p className="pl-3">${mission.funding_goal}</p>
+        <p className=" mt-2 text-green-400">Mission Points:</p>
+        <p className="pl-3">{mission.funds}</p>
+        <p className=" mt-2 text-green-400">Funding Goal:</p>
+        <p className="pl-3">{mission.funding_goal}</p>
       </div>
     </>
   );
