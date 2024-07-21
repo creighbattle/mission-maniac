@@ -44,6 +44,7 @@ export default function Mission() {
   const [supporters, setSupporters] = useState([]);
 
   useEffect(() => {
+    setMission(null);
     fetchMission();
   }, [missionId]);
 

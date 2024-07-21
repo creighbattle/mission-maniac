@@ -27,8 +27,10 @@ export default function MissionReport({ recruiter, isUser, setSignInOpen }) {
 
     if (mission?.expires_at && new Date(mission.expires_at) < now) {
       setIsExpired(true);
+    } else {
+      setIsExpired(false);
     }
-  }, []);
+  }, [mission]);
 
   if (!mission) {
     return (
