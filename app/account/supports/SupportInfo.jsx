@@ -56,8 +56,8 @@ export default function SupportInfo({
       </div>
 
       <div className="flex items-center justify-between mt-2">
-        <p className="text-green-400">Supported: </p>
-        <p>${mission?.funded}</p>
+        <p className="text-green-400">Added Mission Points: </p>
+        <p>{mission?.funded}</p>
       </div>
       <div className="mt-2">
         <p className="text-green-400">Mission: </p>

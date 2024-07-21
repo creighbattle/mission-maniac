@@ -105,8 +105,8 @@ export default function Supports({ tab }) {
           </p>
         </div>
         <div className="flex items-center justify-between mt-2">
-          <p>You Funded: </p>
-          <p>${el.funded}</p>
+          <p>Mission Points Contributed: </p>
+          <p>{el.funded}</p>
         </div>
         <div className="mt-2">
           <p className="text-green-400">Mission: </p>
