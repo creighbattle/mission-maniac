@@ -54,8 +54,8 @@ export default function ActiveMissionInfo({ setView, setOpen }) {
         })}
       </div>
       <div className="flex items-center justify-between mt-2">
-        <p className="text-green-400">Funding: </p>
-        <p>${selectedData?.funds}</p>
+        <p className="text-green-400">Mission Points: </p>
+        <p>{selectedData?.funds}</p>
       </div>
       <div className="mt-2">
         <p className="text-green-400">Mission: </p>

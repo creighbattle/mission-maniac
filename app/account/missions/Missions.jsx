@@ -123,13 +123,13 @@ export default function Missions() {
         {el?.transfer_amount && el.total_transfer && (
           <>
             <div className="flex items-center justify-between mt-2">
-              <p>Total Paid: </p>
+              <p>Total Mission Points Paid: </p>
 
-              <p>${(el?.total_transfer / 100).toFixed(2)}</p>
+              <p>{el?.total_transfer}</p>
             </div>
             <div className="flex items-center justify-between mt-2">
-              <p>Pending Payment: </p>
-              <p>${(el.transfer_amount / 100).toFixed(2)}</p>
+              <p>Points Pending Payment: </p>
+              <p>{el.transfer_amount}</p>
             </div>
           </>
         )}

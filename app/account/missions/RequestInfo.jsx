@@ -65,13 +65,13 @@ export default function RequestInfo({ setView, setOpen }) {
       </div>
       <div className="flex items-center justify-between mt-2">
         <InfoLabel
-          label={"Fund"}
-          title={"Fund"}
+          label={"Mission Points"}
+          title={"Mission Points"}
           message={
             "The amount the Recruiter initially funded the mission with. If you are to accept, you can set a funding goal which Supporters can then help reach."
           }
         />
-        <p>${selectedData?.funds}</p>
+        <p>{selectedData?.funds}</p>
       </div>
       <div className="flex items-center justify-between mt-2">
         <InfoLabel

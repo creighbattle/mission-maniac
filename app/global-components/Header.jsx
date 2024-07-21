@@ -314,7 +314,9 @@ export default function Header() {
 
   useEffect(() => {
     if (open) {
-      console.log("running");
+      document.body.classList.add("no-scroll");
+    } else {
+      document.body.classList.remove("no-scroll");
     }
   }, [open]);
 
@@ -336,16 +338,19 @@ export default function Header() {
 
   return (
     <>
-      <div
-        className={`transition-transform transform duration-500 absolute top-0 left-0 z-40 ${
-          open ? "translate-y-0" : "translate-y-full"
-        }`}
-        style={{
-          backgroundColor: "#141414",
-          height: "100svh",
-          width: "100%",
-        }}
-      ></div>
+      <div className="fixed w-full z-40">
+        <div
+          className={`transition-transform transform duration-500 absolute top-0 left-0 z-40 ${
+            open ? "translate-y-0" : "translate-y-full"
+          }`}
+          style={{
+            backgroundColor: "#141414",
+            height: "100svh",
+            width: "100%",
+          }}
+        />
+      </div>
+
       <header className="fixed w-full z-40 px-4 py-4 max-w-7xl left-[50%] translate-x-[-50%] bg-white">
         <div className="w-full items-center flex justify-between">
           <div

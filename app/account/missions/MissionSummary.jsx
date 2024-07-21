@@ -54,13 +54,13 @@ export default function MissionSummary({ setView, setOpen }) {
         })}
       </div>
       <div className="flex items-center justify-between mt-2">
-        <p className="text-green-400">Funding: </p>
-        <p>${selectedData?.funds}</p>
+        <p className="text-green-400">Mission Points: </p>
+        <p>{selectedData?.funds}</p>
       </div>
       {selectedData?.funding_goal && (
         <div className="flex items-center justify-between mt-2">
           <p className="text-green-400">Funding Goal: </p>
-          <p>${selectedData?.funding_goal}</p>
+          <p>{selectedData?.funding_goal}</p>
         </div>
       )}
       <div className="mt-2">
@@ -110,15 +110,15 @@ export default function MissionSummary({ setView, setOpen }) {
           {selectedData?.transfer_amount && (
             <>
               <div className="mt-2">
-                <p className="text-green-400">Total Paid: </p>
+                <p className="text-green-400">Total Mission Points Paid: </p>
                 <div className="ml-2">
-                  <p>${(selectedData?.total_transfer / 100).toFixed(2)}</p>
+                  <p>{selectedData?.total_transfer}</p>
                 </div>
               </div>
               <div className="mt-2">
-                <p className="text-green-400">Pending Payout: </p>
+                <p className="text-green-400">Points Pending Payout: </p>
                 <div className="ml-2">
-                  <p>${(selectedData?.transfer_amount / 100).toFixed(2)}</p>
+                  <p>{selectedData?.transfer_amount}</p>
                 </div>
               </div>
             </>

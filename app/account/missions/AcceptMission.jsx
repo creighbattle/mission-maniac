@@ -114,7 +114,7 @@ export default function AcceptMission({
         <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-100 text-3xl font-bold">
           M
         </div>
-        <div className="mt-3 text-center sm:mt-5">
+        <div className="mt-3 text-center sm:mt-3 sm:mb-3">
           <Dialog.Title
             as="h3"
             className="text-base font-semibold leading-6 text-white"
@@ -132,7 +132,7 @@ export default function AcceptMission({
           <InfoLabel
             label={"Funding Goal"}
             title={"Funding Goal"}
-            message={`You can set an amount it would take for you to complete this mission. 
+            message={`You can set an amount of mission points it would take for you to complete the mission. 
             Even if the goal isn't reached, you can still complete the mission. 
             This goal helps your viewers understand the challenge level. 
             If the goal is reached and the recruiter has set an expiration time, 
@@ -141,9 +141,7 @@ export default function AcceptMission({
         </label>
         <div className="mt-2 w-full">
           <div className="flex rounded-md shadow-sm ring-1 ring-inset ring-gray-300 focus-within:ring-2 focus-within:ring-inset focus-within:ring-green-600 sm:max-w-md outline-none  text-white">
-            <span className="flex select-none items-center pl-3 text-white-500 sm:text-sm">
-              $
-            </span>
+            <span className="flex select-none items-center pl-3 text-white-500 sm:text-sm"></span>
             <input
               onChange={(e) => setFundingGoal(e.target.value)}
               type="tel"

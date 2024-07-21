@@ -86,6 +86,8 @@ export function useGetUserAccount(setError) {
       const authSession = await fetchAuthSession();
       jwt = authSession.tokens.idToken.toString();
 
+      console.log(jwt);
+
       const response = await fetch(process.env.NEXT_PUBLIC_GET_ACCOUNT, {
         headers: {
           Authorization: `Bearer ${jwt}`,

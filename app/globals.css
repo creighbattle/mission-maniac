@@ -20,3 +20,7 @@
     scrollbar-width: none; /* Firefox */
   }
 }
+
+.no-scroll {
+  overflow: hidden;
+}
