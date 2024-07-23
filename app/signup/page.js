@@ -51,7 +51,8 @@ export default function SignUp() {
         },
       });
 
-      router.push("/verify-email");
+      // router.push("/verify-email");
+      router.push("/");
     } catch (error) {
       setErrors(error.message);
     } finally {

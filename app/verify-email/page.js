@@ -38,7 +38,8 @@ export default function VerifyEmail() {
     setErrors("");
     setLoading(true);
     try {
-      await resendSignUpCode({ username: email });
+      const obj = await resendSignUpCode({ username: email });
+      console.log(obj);
       setTitle("Code Sent");
       setInfoMessage("Please check your spam folder if you do not see it.");
       setShowInfo(true);
