@@ -2,6 +2,7 @@ import { create } from "zustand";
 
 const useUserStore = create((set, get) => ({
   user: null,
+  missionPoints: -300,
   selectedData: null,
   mission: null,
   data: [],
@@ -25,6 +26,9 @@ const useUserStore = create((set, get) => ({
   },
   setMission: (mission) => {
     set({ mission });
+  },
+  setMissionPoints: (missionPoints) => {
+    set({ missionPoints });
   },
   setSelectedData: (selectedData) => {
     set({ selectedData });

@@ -5,9 +5,10 @@ import {
   EmbeddedCheckoutProvider,
   EmbeddedCheckout,
 } from "@stripe/react-stripe-js";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { fetchAuthSession } from "aws-amplify/auth";
 import { Amplify } from "aws-amplify";
+import Header from "../global-components/Header";
 
 Amplify.configure({
   Auth: {
@@ -22,14 +23,17 @@ const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISH_KEY);
 
 export default function Checkout() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const fetchClientSecret = useCallback(async () => {
     let jwt;
+    let priceId;
 
     try {
       const authSession = await fetchAuthSession();
       jwt = authSession.tokens.idToken.toString();
+      priceId = searchParams.get("priceId");
     } catch (error) {
-      router.push("/");
+      router.push("/shop");
       return;
     }
     // Create a Checkout Session
@@ -40,7 +44,7 @@ export default function Checkout() {
         Authorization: `Bearer ${jwt}`,
       },
       body: JSON.stringify({
-        productId: "price_1PeHljFpEHwNvH6HZNF5wDma",
+        productId: priceId,
       }),
     })
       .then((res) => res.json())
@@ -53,10 +57,13 @@ export default function Checkout() {
   const options = { fetchClientSecret };
 
   return (
-    <div id="checkout" className="lg:mt-20">
-      <EmbeddedCheckoutProvider stripe={stripePromise} options={options}>
-        <EmbeddedCheckout />
-      </EmbeddedCheckoutProvider>
+    <div id="checkout" className="">
+      <Header />
+      <div className="pt-24 lg:pt-36">
+        <EmbeddedCheckoutProvider stripe={stripePromise} options={options}>
+          <EmbeddedCheckout />
+        </EmbeddedCheckoutProvider>
+      </div>
     </div>
   );
 }

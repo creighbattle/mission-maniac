@@ -283,8 +283,8 @@ export default function Learn() {
           </h2>
         </div>
         <p className="mx-auto mt-6 max-w-2xl text-center text-lg leading-8 text-gray-300">
-          A mission is a specific content request. For example: "Upload a video
-          of yourself doing a handstand for 10 seconds."
+          A mission is a specific content request. For example: &quot;Upload a
+          video of yourself doing a handstand for 10 seconds.&quot;
         </p>
         <div className="flex items-center justify-center mt-10">
           <img

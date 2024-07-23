@@ -30,7 +30,7 @@ export default function CreateMissionForm({
     setTitle,
     setInfoMessage,
   } = useInfoStore();
-  const { user, setAmount, amount } = useUserStore();
+  const { user, setAmount, amount, missionPoints } = useUserStore();
   const [errorMessage, setErrorMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [missionLength, setMissionLength] = useState(0);
@@ -187,7 +187,7 @@ export default function CreateMissionForm({
         <div className="mt-3 text-center sm:mt-5">
           <Dialog.Title
             as="h3"
-            className="text-base font-semibold leading-6 text-white"
+            className="text-lg font-semibold leading-6 text-white"
           >
             Create Mission
           </Dialog.Title>
@@ -197,12 +197,12 @@ export default function CreateMissionForm({
       <form>
         <div className="space-y-0">
           <div className="">
-            <p className="mt-4 text-sm leading-6 text-gray-100 text-center">
-              {/* Recruit <span className="text-green-400">@{user.username}</span>{" "}
-              for a mission. Minimum funding needed to create a mission is $
-              {user.min_fund}. */}
-              Minimum mission points required: {user.min_fund}.
-            </p>
+            {missionPoints !== -300 && (
+              <p className="mt-4 text-sm leading-6 text-gray-400 text-center font-medium">
+                Mission Points Available:
+                {missionPoints === -555 ? " refresh page" : missionPoints}
+              </p>
+            )}
 
             <div className="mt-4">
               <div className="flex items-center justify-between">
@@ -210,7 +210,12 @@ export default function CreateMissionForm({
                   htmlFor="username"
                   className="block text-sm font-medium leading-6 text-green-400"
                 >
-                  Add Mission Points
+                  Add Mission Points{" "}
+                  {user.min_fund > 0 && (
+                    <span className="text-gray-400">
+                      ({user.min_fund} required)
+                    </span>
+                  )}
                 </label>
                 <InformationCircleIcon
                   className="h-5 w-5 text-green-400 hover:cursor-pointer"
@@ -333,7 +338,7 @@ export default function CreateMissionForm({
       <div className="mt-5 sm:mt-6">
         <button
           type="button"
-          className="inline-flex w-full justify-center rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600"
+          className="inline-flex w-full justify-center rounded-md bg-green-600 px-3 py-3 text-sm font-semibold text-white shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600"
           onClick={handleSubmit}
         >
           {loading ? (

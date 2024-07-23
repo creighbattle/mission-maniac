@@ -1,57 +1,106 @@
 "use client";
-import { CheckIcon } from "@heroicons/react/20/solid";
+import { useRouter } from "next/navigation";
 import Header from "../global-components/Header";
 
 const tiers = [
   {
     name: "Recon",
-    id: "tier-hobby",
+    id: "tier-recon",
     href: "#",
     priceMonthly: "$1",
     points: "58",
     description: "An ideal choice to explore and support your first mission.",
     features: [],
     featured: false,
+    priceId: "price_1PeHksFpEHwNvH6Ho4AYFp5h",
   },
   {
     name: "Scout",
-    id: "tier-hobby",
+    id: "tier-scout",
     href: "#",
     priceMonthly: "$5",
     points: "410",
     description: "Great for backing small missions and getting more involved.",
     features: [],
     featured: false,
+    priceId: "price_1PeHlFFpEHwNvH6HSw9J5Esq",
   },
   {
     name: "Operative",
-    id: "tier-hobby",
+    id: "tier-operative",
     href: "#",
     priceMonthly: "$10",
     points: "850",
     description: "Perfect for supporting creators and engaging in missions.",
     features: [],
     featured: false,
+    priceId: "price_1PeHljFpEHwNvH6HZNF5wDma",
   },
   {
-    name: "Operative",
-    id: "tier-hobby",
+    name: "Agent",
+    id: "tier-agent",
     href: "#",
     priceMonthly: "$20",
     points: "1730",
     description: "A strong option to make a noticeable impact on missions.",
     features: [],
     featured: false,
+    priceId: "price_1PfN4UFpEHwNvH6HMja5CTA4",
   },
   {
-    name: "Agent",
-    id: "tier-enterprise",
+    name: "Specialist",
+    id: "tier-specialist",
     href: "#",
-    priceMonthly: "$30",
-    points: "2610",
+    priceMonthly: "$25",
+    points: "2170",
     description: "Excellent for dedicated supporters aiming to help creators.",
     features: [],
     featured: true,
+    priceId: "price_1PfN50FpEHwNvH6HOVNYZNuf",
+  },
+  {
+    name: "Commander",
+    id: "tier-commander",
+    href: "#",
+    priceMonthly: "$50",
+    points: "4370",
+    description: "Optimal for significant contributions to mission success.",
+    features: [],
+    featured: false,
+    priceId: "price_1PfN5VFpEHwNvH6Hxg99dXSg",
+  },
+  {
+    name: "Captain",
+    id: "tier-captain",
+    href: "#",
+    priceMonthly: "$100",
+    points: "8770",
+    description: "Ideal for dedicated supporters with a passion for missions.",
+    features: [],
+    featured: false,
+    priceId: "price_1PfN6RFpEHwNvH6HIm2GKESW",
+  },
+  {
+    name: "General",
+    id: "tier-general",
+    href: "#",
+    priceMonthly: "$250",
+    points: "21970",
+    description: "A premium choice for major backing and top-tier support.",
+    features: [],
+    featured: false,
+    priceId: "price_1PfN79FpEHwNvH6HglFS1HIM",
+  },
+  {
+    name: "Elite",
+    id: "tier-elite",
+    href: "#",
+    priceMonthly: "$500",
+    points: "43970",
+    description: "The ultimate plan for elite support and maximum impact.",
+    features: [],
+    featured: false,
+    priceId: "price_1PfN7eFpEHwNvH6HBwymlBva",
   },
 ];
 
@@ -60,6 +109,12 @@ function classNames(...classes) {
 }
 
 export default function Example() {
+  const router = useRouter();
+
+  const nav = (priceId) => {
+    router.push(`/checkout?priceId=${priceId}`);
+  };
+
   return (
     <>
       <Header />
@@ -105,7 +160,7 @@ export default function Example() {
                     : tierIdx % 2 == 0
                     ? "rounded-t-3xl lg:rounded-bl-3xl"
                     : "lg:rounded-tr-3xl",
-                  "rounded-3xl p-8 ring-1 ring-gray-900/10 sm:p-10 min-w-64"
+                  "rounded-3xl p-6 ring-1 ring-gray-900/10 sm:p-10 min-w-64"
                 )}
               >
                 <h3
@@ -163,18 +218,19 @@ export default function Example() {
                     </li>
                   ))}
                 </ul> */}
-                <a
-                  href={tier.href}
-                  aria-describedby={tier.id}
+                <button
+                  // href={tier.href}
+                  // aria-describedby={tier.id}
+                  onClick={() => nav(tier.priceId)}
                   className={classNames(
                     tierIdx % 2 == 0
                       ? "bg-green-700 text-white shadow-sm hover:bg-green-400 focus-visible:outline-green-500"
                       : "text-green-600 ring-1 ring-inset ring-green-500 hover:ring-green-300 focus-visible:outline-green-600 bg-gray-900",
-                    "mt-8 block rounded-md px-3.5 py-2.5 text-center text-sm font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 sm:mt-10"
+                    "mt-8 block w-full rounded-md px-3.5 py-2.5 text-center text-sm font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 sm:mt-10"
                   )}
                 >
                   Purchase Mission Points
-                </a>
+                </button>
               </div>
             ))}
           </div>

@@ -12,6 +12,7 @@ import { fetchUserAttributes } from "aws-amplify/auth";
 import { useRouter } from "next/navigation";
 import { Amplify } from "aws-amplify";
 import SignInModal from "../global-components/SignInModal";
+import getUserPoints from "../api-calls/get-user-points";
 
 Amplify.configure({
   Auth: {
@@ -25,7 +26,7 @@ Amplify.configure({
 export default function UserPage() {
   const [error, setError] = useState("");
   useGetUser(setError);
-  const { user, loading } = useUserStore();
+  const { user, loading, setMissionPoints } = useUserStore();
   const router = useRouter();
   const [isUser, setIsUser] = useState(false);
 
@@ -41,6 +42,7 @@ export default function UserPage() {
         router.push("new-account");
         return;
       }
+      await getUserPoints({ setMissionPoints });
     } catch (error) {}
   };
 
