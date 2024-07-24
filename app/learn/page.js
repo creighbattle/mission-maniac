@@ -28,7 +28,7 @@ export default function Learn() {
           Mission Maniac is a platform where viewers and content creators come
           together through unique challenges. Viewers can set missions for their
           favorite creators, making interactions more exciting and engaging.
-          Whether you're a viewer looking to participate more actively or a
+          Whether you&apos;re a viewer looking to participate more actively or a
           creator seeking new content ideas, Mission Maniac turns support into a
           fun and interactive experience.
         </p>
