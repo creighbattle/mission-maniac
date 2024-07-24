@@ -1,5 +1,5 @@
 "use client";
-import { signUp, getCurrentUser } from "aws-amplify/auth";
+import { signUp, getCurrentUser, signIn } from "aws-amplify/auth";
 import { useEffect, useState } from "react";
 import { Amplify } from "aws-amplify";
 import { useRouter } from "next/navigation";
@@ -51,8 +51,10 @@ export default function SignUp() {
         },
       });
 
+      await signIn({ username: email, password });
+
       // router.push("/verify-email");
-      router.push("/");
+      router.push("/new-account");
     } catch (error) {
       setErrors(error.message);
     } finally {
