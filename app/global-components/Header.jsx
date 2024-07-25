@@ -433,12 +433,12 @@ export default function Header() {
               Made for the community
             </div>
             <div className="flex-grow items-end flex pb-4 text-white tracking-wide text-sm sm:text-lg">
-              <div className="mr-5 text-lg">
+              {/* <div className="mr-5 text-lg">
                 <a href="">Instagram</a>
               </div>
               <div className="mr-5 text-lg">
                 <a href="">TikTok</a>
-              </div>
+              </div> */}
             </div>
           </div>
         </div>
