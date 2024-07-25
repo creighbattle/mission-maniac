@@ -12,6 +12,7 @@ export default function ManiacNewbie() {
   const [saving, setSaving] = useState(false);
   const { user, setUser } = useUserStore();
   const [minFund, setMinFund] = useState("");
+  const [code, setCode] = useState("");
   const [error, setError] = useState("");
 
   const { setShowNotification, setNMessage, setNTitle, setNError } =
@@ -32,6 +33,7 @@ export default function ManiacNewbie() {
     };
 
     try {
+      throw new Error("invalid Invite Code");
       const authSession = await fetchAuthSession();
       const jwt = authSession.tokens.idToken.toString();
       const response = await fetch(process.env.NEXT_PUBLIC_WRITE_STRIPE_LINK, {
@@ -65,7 +67,8 @@ export default function ManiacNewbie() {
 
       setLoading(false);
     } catch (error) {
-      setError("Failed to create the link. Please try again in a moment.");
+      // setError("Failed to create the link. Please try again in a moment.");
+      setError(error.message);
     } finally {
       setLoading(false);
     }
@@ -219,8 +222,28 @@ export default function ManiacNewbie() {
         daring missions. Once this is completed, you can begin receiving
         missions from recruiters all around the globe.
       </p>
+      <div className="flex flex-col w-full items-center mt-4">
+        <label
+          htmlFor="code"
+          className="block text-sm font-medium leading-6 text-green-400"
+        >
+          Invite Code
+        </label>
+        <div className="mt-2">
+          <input
+            onChange={(e) => setCode(e.target.value)}
+            value={code}
+            id="code"
+            name="code"
+            type="code"
+            autoComplete="code"
+            required
+            className="block rounded-md border-0 py-1.5 px-2 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-green-600 sm:text-sm sm:leading-6 outline-none caret-green-400 bg-black text-center"
+          />
+        </div>
+      </div>
       {error && <p className="text-[#FB87A1] text-center mt-2">{error}</p>}
-      <div className="mt-5 w-full flex items-center justify-center">
+      <div className="mt-3 w-full flex items-center justify-center">
         <button
           type="button"
           onClick={handleClick}
