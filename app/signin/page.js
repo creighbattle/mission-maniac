@@ -1,28 +1,82 @@
 "use client";
-import { Amplify } from "aws-amplify";
+import { Amplify, Auth } from "aws-amplify";
+import { Hub } from "aws-amplify/utils";
 import { useRouter } from "next/navigation";
 import useUserStore from "../stores/userStore";
-import { useState } from "react";
-import { signIn } from "aws-amplify/auth";
+import { useEffect, useState } from "react";
+import { getCurrentUser, signIn, signInWithRedirect } from "aws-amplify/auth";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 import { ClipLoader } from "react-spinners";
 
 Amplify.configure({
   Auth: {
     Cognito: {
-      userPoolClientId: process.env.NEXT_PUBLIC_POOL_CLIENT_ID,
       userPoolId: process.env.NEXT_PUBLIC_USER_POOL_ID,
+      userPoolClientId: process.env.NEXT_PUBLIC_POOL_CLIENT_ID,
+      loginWith: {
+        oauth: {
+          redirectSignIn: [
+            "http://localhost:3000",
+            "https://www.mission-maniac.com",
+          ],
+          redirectSignOut: [
+            "http://localhost:3000",
+            "https://www.mission-maniac.com",
+          ],
+          scopes: [
+            "email",
+            "profile",
+            "openid",
+            "aws.cognito.signin.user.admin",
+          ],
+          responseType: "code",
+          domain: process.env.NEXT_PUBLIC_COGNITO_DOMAIN,
+        },
+      },
     },
   },
 });
 
 export default function SignIn() {
   const { email, setEmail, password, setPassword } = useUserStore();
-  // const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+
+  const [customState, setCustomState] = useState(null);
+  const [user, setUser] = useState(null);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const unsubscribe = Hub.listen("auth", ({ payload }) => {
+      switch (payload.event) {
+        case "signInWithRedirect":
+          getUser();
+          break;
+        case "signInWithRedirect_failure":
+          setError("An error has occurred during the Oauth flow.");
+          break;
+        case "customOAuthState":
+          setCustomState(payload.data);
+          break;
+      }
+    });
+
+    getUser();
+
+    return unsubscribe;
+  }, []);
+
+  const getUser = async () => {
+    try {
+      const currentUser = await getCurrentUser();
+      setUser(currentUser);
+    } catch (error) {
+      console.error(error);
+      console.log("Not signed in");
+    }
+  };
 
   const onSubmit = async (e) => {
     e.preventDefault();
@@ -45,6 +99,15 @@ export default function SignIn() {
       .finally(() => {
         setLoading(false);
       });
+  };
+
+  const handleGoogleSignIn = async () => {
+    try {
+      await signInWithRedirect({ provider: "Google" });
+    } catch (err) {
+      console.error("Google sign-in error:", err);
+      setErrors("Failed to sign in with Google.");
+    }
   };
 
   return (
@@ -166,6 +229,15 @@ export default function SignIn() {
                     </button>
                   </div>
                 </form>
+
+                <div className="mt-4">
+                  <button
+                    onClick={handleGoogleSignIn}
+                    className="flex w-full justify-center rounded-md bg-blue-500 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-blue-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+                  >
+                    Sign in with Google
+                  </button>
+                </div>
               </div>
             </div>
           </div>

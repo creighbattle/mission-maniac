@@ -9,12 +9,33 @@ import What from "./home-components/What";
 import { Amplify } from "aws-amplify";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import "aws-amplify/auth/enable-oauth-listener";
 
 Amplify.configure({
   Auth: {
     Cognito: {
-      userPoolClientId: process.env.NEXT_PUBLIC_POOL_CLIENT_ID,
       userPoolId: process.env.NEXT_PUBLIC_USER_POOL_ID,
+      userPoolClientId: process.env.NEXT_PUBLIC_POOL_CLIENT_ID,
+      loginWith: {
+        oauth: {
+          redirectSignIn: [
+            "http://localhost:3000",
+            "https://www.mission-maniac.com",
+          ],
+          redirectSignOut: [
+            "http://localhost:3000",
+            "https://www.mission-maniac.com",
+          ],
+          scopes: [
+            "email",
+            "profile",
+            "openid",
+            "aws.cognito.signin.user.admin",
+          ],
+          responseType: "code",
+          domain: "mission-maniac.auth.us-east-1.amazoncognito.com",
+        },
+      },
     },
   },
 });
@@ -33,7 +54,9 @@ export default function Home() {
         router.push("new-account");
         return;
       }
-    } catch (error) {}
+    } catch (error) {
+      console.error("err: ", error);
+    }
   };
 
   return (

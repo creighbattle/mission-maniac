@@ -30,7 +30,7 @@ export default async function getUserMissions({
   let missionStatus = "pending";
   let sortBy = "created_at";
   let order = "DESC";
-  let limit = 1;
+  let limit = 10;
 
   switch (sortOption) {
     case "Oldest":
