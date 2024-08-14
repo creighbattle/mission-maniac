@@ -8,8 +8,28 @@ import Header from "../global-components/Header";
 Amplify.configure({
   Auth: {
     Cognito: {
-      userPoolClientId: process.env.NEXT_PUBLIC_POOL_CLIENT_ID,
       userPoolId: process.env.NEXT_PUBLIC_USER_POOL_ID,
+      userPoolClientId: process.env.NEXT_PUBLIC_POOL_CLIENT_ID,
+      loginWith: {
+        oauth: {
+          redirectSignIn: [
+            "http://localhost:3000",
+            "https://www.mission-maniac.com",
+          ],
+          redirectSignOut: [
+            "http://localhost:3000",
+            "https://www.mission-maniac.com",
+          ],
+          scopes: [
+            "email",
+            "profile",
+            "openid",
+            "aws.cognito.signin.user.admin",
+          ],
+          responseType: "code",
+          domain: process.env.NEXT_PUBLIC_COGNITO_DOMAIN,
+        },
+      },
     },
   },
 });
