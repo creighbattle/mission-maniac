@@ -37,7 +37,7 @@ export default function Checkout() {
       const urlParams = new URLSearchParams(queryString);
       priceId = urlParams.get("priceId");
     } catch (error) {
-      console.err(error);
+      console.error(error);
       router.push("/shop");
       return;
     }
@@ -59,7 +59,7 @@ export default function Checkout() {
       const data = await response.json();
       setClientSecret(data.clientSecret);
     } catch (err) {
-      console.err(err);
+      console.error(err);
       router.push("/");
     }
   }, [router]);
