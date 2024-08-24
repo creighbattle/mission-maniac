@@ -149,6 +149,9 @@ export default function SupportMissionForm({
             Support Mission
           </Dialog.Title>
         </div>
+        <p className="mt-3 text-sm leading-6 text-gray-400 text-center font-medium">
+          Mission Points Available: 850
+        </p>
       </div>
 
       <form>
