@@ -108,7 +108,7 @@ export default function RequestInfo({ setView, setOpen }) {
         </div>
       )}
 
-      <div className="mt-2">
+      {/* <div className="mt-2">
         <InfoLabel
           label={"Mission Reminder"}
           title={"Mission Reminder"}
@@ -119,7 +119,7 @@ export default function RequestInfo({ setView, setOpen }) {
           to accept. There are many good recruiter&apos;s out there, but when
           there is good... there must be bad. Have fun be safe.
         </p>
-      </div>
+      </div> */}
 
       <div className="flex mt-5">
         <button
